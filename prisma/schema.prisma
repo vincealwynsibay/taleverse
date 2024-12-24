@@ -9,9 +9,29 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  clerkId  String  @unique
-  email    String  @unique
+  id       Int      @id @default(autoincrement())
+  clerkId  String   @unique
+  email    String   @unique
   username String
-  image    String? @default("")
+  image    String?  @default("")
+  role     UserRole @default(USER)
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+// path: /{novel-name}
+// 
+
+model Novel {
+  id          Int    @id @default(autoincrement())
+  title       String @unique @default("")
+  synopsis    String @default("")
+  author      String @default("")
+  releaseYear String @default("")
+  totalViews  Int    @default(0)
+  // genre
+  // categories
 }
