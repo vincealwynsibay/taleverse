@@ -1,16 +1,14 @@
-import { useAuth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-export default function AuthenticatedLayout({
+export default async function AuthenticatedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isSignedIn } = useAuth();
+  const { userId } = await auth();
 
-  if (!isSignedIn) {
-    redirect("/sign-in");
-  }
+  if (!userId) redirect("/sign-in");
 
   return (
     <div>
