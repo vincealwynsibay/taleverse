@@ -8,9 +8,8 @@ export async function checkUser() {
     const { userId: clerkId } = await auth();
 
   if (!clerkId) {
-    return {message: "You must be signed in to perform this action.", success: false};
+    return {message: "You must be signed in to perform this action.", success: false, data: undefined};
   }
-
   
   const user = await prisma.user.findFirst({
     where: {
@@ -19,7 +18,7 @@ export async function checkUser() {
   });
 
   if (!user) {
-    return {message: "User does not exist.", success: false};
+    return {message: "User does not exist.", success: false, data: undefined};
   }
 
   return { message: "User exist", success:true}

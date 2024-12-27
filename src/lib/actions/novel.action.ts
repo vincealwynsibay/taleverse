@@ -5,6 +5,7 @@ import { checkUser } from "./common";
 import { novelSchema } from "../validation";
 import prisma from "../db";
 import { Prisma } from "@prisma/client";
+import { generateSlug } from "../utils";
 
 export async function createNovel(
   prevState: FormState,
@@ -38,6 +39,7 @@ export async function createNovel(
         synopsis: validatedFields.data.synopsis,
         author: validatedFields.data.author,
         releaseYear: validatedFields.data.releaseYear,
+        slug: generateSlug(validatedFields.data.title)
       },
     });
     return { message: "Novel created successfully.", success: true };
@@ -59,14 +61,14 @@ export async function getNovels() {
     return isValidUser;
   }
 
-  const novels = await prisma.novel.findMany();
+  const novels = await prisma.novel.findMany() ?? [];
 
   return {
     data: novels,
   };
 }
 
-export async function getNovel(id: number) {
+export async function getNovel(slug: string) {
   const isValidUser = await checkUser();
   if (!isValidUser.success) {
     return isValidUser;
@@ -74,11 +76,11 @@ export async function getNovel(id: number) {
 
   const novel = await prisma.novel.findFirst({
     where: {
-      id: id,
+      slug: slug,
     },
   });
 
   return {
-    data: novel,
+    data: novel
   };
 }
