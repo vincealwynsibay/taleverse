@@ -30,6 +30,7 @@ model Novel {
   title       String @unique @default("")
   synopsis    String @default("")
   author      String @default("")
+  slug        String @default("")
   releaseYear String @default("")
   totalViews  Int    @default(0)
   // genre

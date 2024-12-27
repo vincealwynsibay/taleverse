@@ -18,11 +18,15 @@ import {
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 export default function CreateNovelForm() {
   const [state, submitNovel, isPending] = useActionState(createNovel, {
     message: "",
   });
+
+  const router = useRouter();
+  router.push("New Test");
 
   const form = useForm<z.output<typeof novelSchema>>({
     resolver: zodResolver(novelSchema),
