@@ -5,7 +5,13 @@ import { Button } from "./ui/button";
 import { Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 
-export default function CreateChapterButton({ novelId }: { novelId: number }) {
+export default function CreateChapterButton({
+  slug,
+  novelId,
+}: {
+  slug: string;
+  novelId: number;
+}) {
   const handleCreateChapter = async () => {
     // create a new chapter with random title
     const chapter = await createChapter(novelId);
@@ -14,9 +20,7 @@ export default function CreateChapterButton({ novelId }: { novelId: number }) {
     }
 
     // redirect to new chapter
-    redirect(
-      `/admin/novels/${chapter.data.novel?.slug}/chapters/${chapter.data.chapter.id}`
-    );
+    redirect(`/admin/novels/${slug}/chapters/${chapter.data.id}`);
   };
 
   return (

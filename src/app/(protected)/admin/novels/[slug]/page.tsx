@@ -13,13 +13,14 @@ export default async function Page({
     redirect("/sign-in");
   }
 
-  const novel = await getNovel((await params).slug);
+  const slug = (await params).slug;
+  const novel = await getNovel(slug);
 
   if (!novel.data) return null;
 
   return (
     <div>
-      <CreateChapterButton novelId={novel.data.id} />
+      <CreateChapterButton slug={slug} novelId={novel.data.id} />
       <h1>{novel.data.title}</h1>
       <p>{novel.data.synopsis}</p>
     </div>
