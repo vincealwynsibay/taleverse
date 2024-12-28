@@ -26,20 +26,23 @@ enum UserRole {
 // 
 
 model Novel {
-  id          Int    @id @default(autoincrement())
-  title       String @unique @default("")
-  synopsis    String @default("")
-  author      String @default("")
-  slug        String @unique @default("")
-  releaseYear String @default("")
-  totalViews  Int    @default(0)
+  id          Int       @id @default(autoincrement())
+  title       String    @unique @default("")
+  synopsis    String    @default("")
+  author      String    @default("")
+  slug        String    @unique @default("")
+  releaseYear String    @default("")
+  totalViews  Int       @default(0)
   // genre
   // categories
+  chapter     Chapter[]
 }
 
 model Chapter {
   id        Int     @id @default(autoincrement())
   title     String  @unique
-  content   String
+  content   String  @default("")
   published Boolean @default(false)
+  novel     Novel   @relation(fields: [novelId], references: [id])
+  novelId   Int
 }
