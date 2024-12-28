@@ -30,9 +30,16 @@ model Novel {
   title       String @unique @default("")
   synopsis    String @default("")
   author      String @default("")
-  slug        String @default("")
+  slug        String @unique @default("")
   releaseYear String @default("")
   totalViews  Int    @default(0)
   // genre
   // categories
+}
+
+model Chapter {
+  id        Int     @id @default(autoincrement())
+  title     String  @unique
+  content   String
+  published Boolean @default(false)
 }
