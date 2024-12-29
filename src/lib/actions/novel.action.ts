@@ -97,3 +97,19 @@ export async function getNovel(slug: string) {
     return { message: e.message, success: false };
   }
 }
+
+export async function latestNovelUpdates() {
+  try {
+    const novels = (await prisma.novel.findMany({
+      include: {
+        chapter: true
+      }
+    })) ?? [];
+
+    return {
+      data: novels,
+    };
+  } catch (e) {
+    return { data: undefined, message: e.message, success: false };
+  }
+}
