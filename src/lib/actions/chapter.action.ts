@@ -69,3 +69,6 @@ export async function getNovelChapter(chapterId: number) {
     return { message: e.message, success: false };
   }
 }
+
+
+
