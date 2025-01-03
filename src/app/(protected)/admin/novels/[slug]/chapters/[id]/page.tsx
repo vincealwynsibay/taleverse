@@ -1,4 +1,4 @@
-import Editor from "@/components/Editor";
+import ChapterEditor from "@/components/ChapterEditor";
 import { getNovelChapter } from "@/lib/actions/chapter.action";
 
 export default async function Page({
@@ -9,9 +9,12 @@ export default async function Page({
   const chapterId = parseInt((await params).id);
   const chapter = await getNovelChapter(chapterId);
   console.log(chapter);
+
+  if (!chapter.data) return null;
+
   return (
     <div>
-      <Editor />
+      <ChapterEditor chapterId={chapterId} content={chapter.data.content} />
     </div>
   );
 }
