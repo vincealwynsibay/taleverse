@@ -41,7 +41,7 @@ model Novel {
 model Chapter {
   id        Int     @id @default(autoincrement())
   title     String  @unique
-  content   String  @default("")
+  content   Json    @default("{}")
   published Boolean @default(false)
   novel     Novel   @relation(fields: [novelId], references: [id])
   novelId   Int

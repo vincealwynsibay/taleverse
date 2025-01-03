@@ -1,5 +1,6 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import prisma from "../db";
 import { checkUser } from "./common";
 
@@ -30,7 +31,6 @@ export async function createChapter(novelId: number) {
     const chapter = await prisma.chapter.create({
       data: {
         title: `Untitled Chapter ${novel?._count.chapter}`,
-        content: "",
         novelId: novelId,
         published: false,
       },
@@ -59,8 +59,6 @@ export async function getNovelChapter(chapterId: number) {
       },
     });
 
-    console.log(JSON.stringify(chapter));
-
     return {
       data: chapter,
       success: true,
@@ -70,5 +68,40 @@ export async function getNovelChapter(chapterId: number) {
   }
 }
 
+export async function updateChapterContent(chapterId: number, newContent: string) {
+  try {
+    const isValidUser = await checkUser();
+    if (!isValidUser.success) {
+      return isValidUser;
+    }
 
+    const chapter = await prisma.chapter.findFirst({
+      where: {
+        id: chapterId,
+      },
+    });
 
+    if (!chapter) {
+      throw new Error("Chapter not found.")
+    }
+
+    console.log(JSON.parse(newContent))
+
+    const updatedChapter = await prisma.chapter.update({
+      where: {
+        id: chapterId,
+      },
+      data: {
+        content: JSON.parse(newContent) as Prisma.JsonArray
+      }
+    })
+
+    return {
+      data: updatedChapter,
+      success: true,
+    };
+  } catch (e) {
+    console.error(e.message)
+    return { message: e.message, success: false };
+  }
+}
