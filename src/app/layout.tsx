@@ -10,6 +10,8 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import MaxWidthWrapper from "@/components/MaxWidthWrapper";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,15 +40,18 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased
           `}
         >
-          <MaxWidthWrapper large>
-            <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
-            {children}
-          </MaxWidthWrapper>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+            <Navbar />
+            <MaxWidthWrapper large>
+              <SignedOut>
+                <SignInButton />
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+              {children}
+            </MaxWidthWrapper>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
