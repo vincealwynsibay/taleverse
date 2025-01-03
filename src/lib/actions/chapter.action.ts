@@ -25,7 +25,7 @@ export async function createChapter(novelId: number) {
     });
 
     if (!novel) {
-      return { message: "Novel not found.", success: false };
+      throw new Error("Novel not found.")
     }
 
     const chapter = await prisma.chapter.create({
