@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Menu, Moon, Search, Sun, User } from "lucide-react";
+import { BookText, House, Menu, Moon, Search, Sun, User } from "lucide-react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
   Sheet,
@@ -11,24 +11,38 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useTheme } from "next-themes";
+import { SignOutButton, useAuth } from "@clerk/nextjs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { useState } from "react";
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
-  const isAuth = false;
+  const { isSignedIn, userId } = useAuth();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  console.log(isSignedIn, userId);
 
   return (
-    <div className="container px-4 py-2 max-w-6xl mx-auto">
-      <nav className=" flex justify-between items-center gap-4 w-full">
+    <div className="border-b-[1px] border-b-border mb-4">
+      <nav className="container px-4 py-2 max-w-6xl mx-auto flex justify-between items-center gap-4 w-full">
         <div className="items-center justify-between gap-4 hidden md:flex">
-          <Link href="/" className="font-bold text-lg">
+          <Link href="/" className="font-bold text-lg text-teal-600">
             taleverse.
           </Link>
-          <Link href="/">Homepage</Link>
-          <Link href="/">Series</Link>
+          <Link href="/" className="text-sm">
+            Homepage
+          </Link>
+          <Link href="/novels" className="text-sm">
+            Series
+          </Link>
         </div>
 
         <div className="contents md:hidden">
-          <Sheet>
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTitle className="hidden">
               <VisuallyHidden.Root>x</VisuallyHidden.Root>
             </SheetTitle>
@@ -38,17 +52,31 @@ export default function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side={"left"}>
-              <div className="flex flex-col gap-2 text-lg">
-                <Link href="/">Taleverse</Link>
-                <Link href="/">Homepage</Link>
-                <Link href="/">Series</Link>
+              <SheetTitle></SheetTitle>
+              <div className="flex flex-col gap-8 mt-8 ">
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 text-gray-400 text-sm"
+                  onClick={() => setSheetOpen(false)}
+                >
+                  <House className="fill-gray-400 text-background w-5 aspect-square" />
+                  Homepage
+                </Link>
+                <Link
+                  href="/novels"
+                  className="flex items-center gap-2 text-gray-400 text-sm"
+                  onClick={() => setSheetOpen(false)}
+                >
+                  <BookText className="fill-gray-400 text-background w-5 aspect-square" />
+                  Series
+                </Link>
               </div>
             </SheetContent>
           </Sheet>
         </div>
 
         <div className="w-full h-fit relative">
-          <Input startIcon={Search} />
+          <Input startIcon={Search} placeholder="Search by title or author" />
         </div>
 
         <div className="flex items-center gap-2">
@@ -63,13 +91,24 @@ export default function Navbar() {
             <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
           </Button>
-          {isAuth ? (
+          {isSignedIn ? (
             <>
               {/* dark mode toggle */}
               {/* account dropdown */}
-              <Button>
-                <User />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+                  <User />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href="/admin/novels">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <SignOutButton>Logout</SignOutButton>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <>
