@@ -1,3 +1,4 @@
+import NovelView from "@/components/NovelView";
 import { getNovel } from "@/lib/actions/novel.action";
 
 export default async function Page({
@@ -6,7 +7,12 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const novel = await getNovel((await params).slug);
-  console.log(novel);
 
-  return <div></div>;
+  if (!novel.data) return null;
+
+  return (
+    <div>
+      <NovelView novel={novel.data} />
+    </div>
+  );
 }

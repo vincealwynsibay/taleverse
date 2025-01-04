@@ -88,6 +88,9 @@ export async function getNovel(slug: string) {
       where: {
         slug: slug,
       },
+      include: {
+        chapter: true
+      }
     });
 
     return {
