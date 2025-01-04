@@ -34,8 +34,11 @@ export default function ChapterEditor({
   } = defaultBlockSpecs;
 
   const { theme } = useTheme();
+
   const contentObject = content as Prisma.JsonArray;
-  const [blocks, setBlocks] = useState<Block[]>(contentObject as Block[]);
+  const [blocks, setBlocks] = useState<Block[]>(
+    contentObject.length > 0 ? (contentObject as Block[]) : []
+  );
 
   const schema = BlockNoteSchema.create({
     blockSpecs: {
@@ -46,7 +49,7 @@ export default function ChapterEditor({
 
   const editor = useCreateBlockNote({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    initialContent: [...(contentObject as any)],
+    ...(blocks.length > 0 && { initialContent: [...(blocks as any)] }),
     schema,
     uploadFile,
   });
