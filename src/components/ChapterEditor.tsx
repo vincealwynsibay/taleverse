@@ -2,7 +2,11 @@
 "use client";
 
 import "@blocknote/core/fonts/inter.css";
-import { BlockNoteView } from "@blocknote/mantine";
+import {
+  BlockNoteView,
+  darkDefaultTheme,
+  lightDefaultTheme,
+} from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { defaultBlockSpecs, BlockNoteSchema, Block } from "@blocknote/core";
@@ -10,6 +14,7 @@ import { uploadFile } from "@/lib/actions/common";
 import { useState } from "react";
 import { updateChapterContent } from "@/lib/actions/chapter.action";
 import { Prisma } from "@prisma/client";
+import { useTheme } from "next-themes";
 
 export default function ChapterEditor({
   chapterId,
@@ -28,6 +33,7 @@ export default function ChapterEditor({
     ...remainingDefaultSpecs
   } = defaultBlockSpecs;
 
+  const { theme } = useTheme();
   const contentObject = content as Prisma.JsonArray;
   const [blocks, setBlocks] = useState<Block[]>(contentObject as Block[]);
 
@@ -55,7 +61,7 @@ export default function ChapterEditor({
     <BlockNoteView
       onChange={() => handleContentChange()}
       editor={editor}
-      theme={"light"}
+      theme={theme === "light" ? lightDefaultTheme : darkDefaultTheme}
     ></BlockNoteView>
   );
 }
