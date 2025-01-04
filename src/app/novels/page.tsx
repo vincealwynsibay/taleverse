@@ -10,7 +10,7 @@ export default async function Page() {
 
   return (
     <div>
-      <div className="grid grid-cols-3 gap-4 mx-4">
+      <div className="flex flex-col gap-4 mx-4 md:grid md:grid-cols-3 ">
         {novels.data &&
           novels.data?.map((novel) => {
             return <NovelItem key={novel.id} novel={novel} />;

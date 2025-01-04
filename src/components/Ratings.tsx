@@ -14,7 +14,7 @@ interface RatingsProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const ratingVariants = {
   default: {
-    star: "text-foreground",
+    star: "text-current",
     emptyStar: "text-muted-foreground",
   },
   destructive: {
@@ -23,7 +23,7 @@ const ratingVariants = {
   },
   yellow: {
     star: "text-yellow-500",
-    emptyStar: "text-yellow-200",
+    emptyStar: "text-muted-foreground ",
   },
 };
 
@@ -49,12 +49,15 @@ const Ratings = ({ ...props }: RatingsProps) => {
     ) : null;
 
   return (
-    <div className={cn("flex items-center gap-1")} {...props}>
+    <div className={cn("flex items-center gap-1 ")} {...props}>
       {[...Array(fullStars)].map((_, i) =>
         React.cloneElement(Icon, {
           key: i,
           size,
-          className: cn(fill ? "fill-current" : "fill-transparent"),
+          className: cn(
+            ratingVariants[variant].star,
+            fill ? "fill-current" : "fill-transparent"
+          ),
         })
       )}
       {partialStar}
