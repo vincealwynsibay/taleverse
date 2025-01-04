@@ -57,6 +57,9 @@ export async function getNovelChapter(chapterId: number) {
       where: {
         id: chapterId,
       },
+      include: {
+        novel: true
+      }
     });
 
     return {

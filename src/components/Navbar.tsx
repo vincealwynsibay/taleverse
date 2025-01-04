@@ -46,7 +46,7 @@ export default function Navbar() {
             <SheetTitle className="hidden">
               <VisuallyHidden.Root>x</VisuallyHidden.Root>
             </SheetTitle>
-            <SheetTrigger>
+            <SheetTrigger asChild>
               <Button variant="outline" size="icon">
                 <Menu />
               </Button>
