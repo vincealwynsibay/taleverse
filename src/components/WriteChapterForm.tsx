@@ -8,12 +8,9 @@ import ChapterEditor from "./ChapterEditor";
 import React, { useState } from "react";
 import { Input } from "./ui/input";
 import { Block } from "@blocknote/core";
-import {
-  updateChapter,
-  updateChapterContent,
-  updateChapterTitle,
-} from "@/lib/actions/chapter.action";
+import { updateChapter } from "@/lib/actions/chapter.action";
 import { useRouter } from "next/navigation";
+import useDebounce from "@/hooks/useDebounce";
 
 export default function WriteChapterForm({
   slug,
@@ -32,6 +29,17 @@ export default function WriteChapterForm({
   );
 
   const router = useRouter();
+
+  const debouncedRequest = useDebounce(async () => {
+    setIsSaving(() => true);
+
+    await updateChapter(chapter.id, {
+      title: title,
+      content: JSON.stringify(blocks),
+    });
+    setIsSaving(() => false);
+    setIsChanged(() => false);
+  });
 
   if (!chapter) return null;
 
@@ -56,10 +64,7 @@ export default function WriteChapterForm({
     setIsChanged(() => true);
 
     if (!chapter.published) {
-      setIsSaving(() => true);
-      await updateChapterTitle(chapter.id, title);
-      setIsSaving(() => false);
-      setIsChanged(() => false);
+      debouncedRequest();
     }
   };
 
@@ -68,10 +73,7 @@ export default function WriteChapterForm({
     setIsChanged(() => true);
 
     if (!chapter.published) {
-      setIsSaving(() => true);
-      await updateChapterContent(chapter.id, JSON.stringify(blocks));
-      setIsSaving(() => false);
-      setIsChanged(() => false);
+      debouncedRequest();
     }
   };
 
