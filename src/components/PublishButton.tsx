@@ -5,17 +5,17 @@ import { Button } from "./ui/button";
 
 export default function PublishButton({
   chapterId,
-  saving,
+  isSaving,
 }: {
   chapterId: number;
-  saving: boolean;
+  isSaving: boolean;
 }) {
   const handlePublishChapter = async () => {
     await publishChapter(chapterId);
   };
 
   return (
-    <Button onClick={() => handlePublishChapter()} disabled={saving}>
+    <Button onClick={() => handlePublishChapter()} disabled={isSaving}>
       Publish
     </Button>
   );
