@@ -1,7 +1,8 @@
 "use server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "../db";
-import {v2 as cloudinary, UploadApiResponse, UploadStream} from "cloudinary"
+import {v2 as cloudinary, UploadApiResponse} from "cloudinary"
+import { uploadPreset } from "../cloudinary";
 
 
 export async function checkUser() {
@@ -47,7 +48,7 @@ export async function uploadImage(file: File) {
   const buffer = Buffer.from(arrayBuffer)
   const uploadResult: UploadApiResponse | undefined = await new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream({
-          upload_preset: 'taleverse'
+          upload_preset: uploadPreset
         }, function (error, result) {
           if (error) {
             reject(error);

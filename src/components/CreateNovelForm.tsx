@@ -18,15 +18,11 @@ import {
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import { useRouter } from "next/navigation";
 
 export default function CreateNovelForm() {
   const [state, submitNovel, isPending] = useActionState(createNovel, {
     message: "",
   });
-
-  const router = useRouter();
-  router.push("New Test");
 
   const form = useForm<z.output<typeof novelSchema>>({
     resolver: zodResolver(novelSchema),
@@ -51,6 +47,28 @@ export default function CreateNovelForm() {
           submitNovel(data);
         }}
       >
+        <FormField
+          control={form.control}
+          name="image"
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          render={({ field: { value, onChange, ...fieldProps } }) => (
+            <FormItem>
+              <FormLabel>Cover Image</FormLabel>
+              <FormControl>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) =>
+                    onChange(event.target.files && event.target.files[0])
+                  }
+                  {...fieldProps}
+                />
+              </FormControl>
+              <FormDescription>This is the public novel name.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="title"
