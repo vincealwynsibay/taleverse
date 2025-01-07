@@ -1,6 +1,8 @@
 "use server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "../db";
+import {v2 as cloudinary, UploadApiResponse, UploadStream} from "cloudinary"
+
 
 export async function checkUser() {
   try {
@@ -38,4 +40,22 @@ export async function uploadFile(file: File) {
     "tmpfiles.org/",
     "tmpfiles.org/dl/"
   );
+}
+
+export async function uploadImage(file: File) {
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = Buffer.from(arrayBuffer)
+  const uploadResult: UploadApiResponse | undefined = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream({
+          upload_preset: 'taleverse'
+        }, function (error, result) {
+          if (error) {
+            reject(error);
+            return;
+          }
+          resolve(result);
+        })
+        .end(buffer);
+      });
+  return uploadResult
 }
