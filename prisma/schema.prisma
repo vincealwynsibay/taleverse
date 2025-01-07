@@ -33,6 +33,7 @@ model Novel {
   slug        String    @unique @default("")
   releaseYear String    @default("")
   totalViews  Int       @default(0)
+  image       String    @default("")
   // genre
   // categories
   chapter     Chapter[]
