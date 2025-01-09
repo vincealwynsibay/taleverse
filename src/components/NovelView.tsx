@@ -37,8 +37,8 @@ export default function NovelView({ novel }: { novel: Novel }) {
       ></div>
       <section className="bg-background lg:z-10 relative shadow-md">
         <MaxWidthWrapper className="mx-auto px-5">
-          <div className="grid grid-cols-12 gap-3">
-            <div className="col-span-12 lg:col-span-9 flex flex-col gap-2">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="order-2 lg:order-1 col-span-12 lg:col-span-9 flex flex-col gap-2 pt-16">
               <div className="flex items-center gap-4">
                 <h1 className="text-3xl font-bold">
                   {novel.title.toWellFormed()}
@@ -50,7 +50,7 @@ export default function NovelView({ novel }: { novel: Novel }) {
               </div>
               <span
                 className={cn(
-                  "px-2 py-2 rounded-sm w-fit text-[0.5rem] inline font-semibold bg-opacity-5",
+                  "px-2 py-2 rounded-sm w-fit text-[0.65rem] inline font-semibold bg-opacity-5",
                   isCompleted
                     ? "bg-red-200 text-red-600"
                     : "bg-green-200 text-green-400"
@@ -60,7 +60,7 @@ export default function NovelView({ novel }: { novel: Novel }) {
               </span>
               <p>Author: {novel.author}</p>
               <p className="text-muted-foreground">{novel.synopsis}</p>
-              <div className="flex flex-row gap-8 [&>:not(:last-child)]:border-r border-r-white ">
+              <div className="flex flex-row gap-10 items-center [&>:not(:last-child)]:border-r border-r-white ">
                 <div className="pr-8">
                   <span className="text-sm font-light">Chapters</span>
                   <div className="flex flex-row items-center gap-2">
@@ -83,15 +83,15 @@ export default function NovelView({ novel }: { novel: Novel }) {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-row gap-4">
+              <div className="flex flex-row gap-4 mt-2">
                 <Button size="lg">Start Reading</Button>
                 <Button variant={"secondary"} size="lg">
                   Read Latest Chapter
                 </Button>
               </div>
             </div>
-            <div className="col-span-12 lg:col-span-3 lg:-translate-y-[130px]">
-              <div className="p-1 bg-background rounded overflow-hidden">
+            <div className="order-1 lg:order-2 col-span-12 lg:col-span-3 lg:-translate-y-[130px]">
+              <div className="z-12 p-1 bg-background rounded overflow-hidden">
                 <Image
                   className="w-full h-auto border-background rounded-lg object-fit"
                   src="/assets/bookcover.png"

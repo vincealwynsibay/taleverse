@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
-import MaxWidthWrapper from "@/components/MaxWidthWrapper";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
 
@@ -41,7 +40,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <Navbar />
-            <MaxWidthWrapper className="mx-auto">{children}</MaxWidthWrapper>
+            {children}
           </ThemeProvider>
         </body>
       </html>
