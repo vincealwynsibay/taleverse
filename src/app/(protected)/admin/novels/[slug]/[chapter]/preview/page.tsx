@@ -1,17 +1,19 @@
 import ChapterView from "@/components/ChapterView";
-import { getNovelChapter } from "@/lib/actions/chapter.action";
+import {
+  getNovelChapter,
+  getNovelChapterBySlug,
+} from "@/lib/actions/chapter.action";
 
 export default async function Page({
   params,
 }: {
   params: Promise<{
-    id: string;
+    chapter: string;
     slug: string;
   }>;
 }) {
   const p = await params;
-  const chapterId = parseInt(p.id);
-  const chapter = await getNovelChapter(chapterId);
+  const chapter = await getNovelChapterBySlug(p.chapter);
 
   if (!chapter.data) return null;
 

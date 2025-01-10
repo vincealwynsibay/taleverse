@@ -3,6 +3,7 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../db";
 import { checkUser } from "./common";
+import { generateSlug } from "../utils";
 
 export async function getNovelPublishedChapters(novelId: number) {
   try {
@@ -95,6 +96,7 @@ export async function createChapter(novelId: number) {
       data: {
         title: `Untitled Chapter ${novel?._count.chapter}`,
         novelId: novelId,
+        slug: generateSlug(`chapter ${novel?._count.chapter}`),
         published: false,
       },
     });
@@ -119,6 +121,31 @@ export async function getNovelChapter(chapterId: number) {
     const chapter = await prisma.chapter.findFirst({
       where: {
         id: chapterId,
+      },
+      include: {
+        novel: true
+      }
+    });
+
+    return {
+      data: chapter,
+      success: true,
+    };
+  } catch (e) {
+    return { message: e.message, success: false };
+  }
+}
+
+export async function getNovelChapterBySlug(slug: string) {
+  try {
+    const isValidUser = await checkUser();
+    if (!isValidUser.success) {
+      return isValidUser;
+    }
+
+    const chapter = await prisma.chapter.findFirst({
+      where: {
+        slug: slug,
       },
       include: {
         novel: true

@@ -7,7 +7,7 @@ export default async function Page() {
   const user = await getCurrentUser();
 
   if (user.data?.user.role !== "ADMIN") {
-    redirect("/sign-in");
+    redirect("/");
   }
 
   const novels = await getNovels();

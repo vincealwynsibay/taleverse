@@ -14,9 +14,11 @@ import useDebounce from "@/hooks/useDebounce";
 
 export default function WriteChapterForm({
   slug,
+  chapterSlug,
   chapter,
 }: {
   slug: string;
+  chapterSlug: string;
   chapter: Chapter;
 }) {
   const [isChanged, setIsChanged] = useState(false);
@@ -90,9 +92,7 @@ export default function WriteChapterForm({
           <>
             <PublishButton chapterId={chapter.id} isSaving={isSaving} />
             <Button asChild disabled={isSaving}>
-              <Link
-                href={`/admin/novels/${slug}/chapters/${chapter.id}/preview`}
-              >
+              <Link href={`/admin/novels/${slug}/${chapterSlug}/preview`}>
                 Preview
               </Link>
             </Button>
@@ -114,6 +114,8 @@ export default function WriteChapterForm({
           value={title}
         />
       </div>
+
+      <div className=""></div>
 
       <ChapterEditor
         blocks={blocks}

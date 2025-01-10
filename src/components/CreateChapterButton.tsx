@@ -20,7 +20,7 @@ export default function CreateChapterButton({
     }
 
     // redirect to new chapter
-    redirect(`/admin/novels/${slug}/chapters/${chapter.data.id}`);
+    redirect(`/admin/novels/${slug}/${chapter.data.slug}`);
   };
 
   return (
