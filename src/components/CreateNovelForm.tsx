@@ -20,6 +20,8 @@ import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import MaxWidthWrapper from "./MaxWidthWrapper";
+import { cn } from "@/lib/utils";
+import { User } from "lucide-react";
 
 export default function CreateNovelForm() {
   const [state, submitNovel, isPending] = useActionState(createNovel, {
@@ -43,6 +45,7 @@ export default function CreateNovelForm() {
 
   console.log(form.getValues());
 
+  console.log(fileEnter);
   const formRef = useRef<HTMLFormElement>(null);
   return (
     <MaxWidthWrapper className="mx-auto">
@@ -58,15 +61,6 @@ export default function CreateNovelForm() {
           }}
         >
           <div className="">
-            {form.getValues("image") && (
-              <Image
-                src={URL.createObjectURL(form.getValues("image"))}
-                className="w-full"
-                alt="cover image"
-                width={0}
-                height={0}
-              />
-            )}
             <FormField
               control={form.control}
               name="image"
@@ -74,45 +68,64 @@ export default function CreateNovelForm() {
               render={({ field: { value, onChange, ref, ...fieldProps } }) => (
                 <FormItem>
                   <FormLabel>Cover Image</FormLabel>
-                  <div
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setFileEnter(true);
-                    }}
-                    onDragLeave={(e) => {
-                      e.preventDefault();
-                      setFileEnter(false);
-                    }}
-                    onDragEnd={(e) => {
-                      e.preventDefault();
-                      setFileEnter(false);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setFileEnter(false);
-                      if (e.dataTransfer.items) {
-                        [...e.dataTransfer.items].forEach((item) => {
-                          if (item.kind === "file") {
-                            const file = item.getAsFile();
-                            console.log(file);
-                            if (file) {
-                              if (fileInputRef.current) {
-                                const dataTransfer = new DataTransfer();
-                                dataTransfer.items.add(file);
-                                fileInputRef.current.files = dataTransfer.files;
-                                onChange(file);
+                  <FormControl className="w-full h-full">
+                    <div
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setFileEnter(true);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        setFileEnter(false);
+                      }}
+                      onDragEnd={(e) => {
+                        e.preventDefault();
+                        setFileEnter(false);
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setFileEnter(false);
+                        if (e.dataTransfer.items) {
+                          [...e.dataTransfer.items].forEach((item) => {
+                            if (item.kind === "file") {
+                              const file = item.getAsFile();
+                              console.log(file);
+                              if (file) {
+                                if (fileInputRef.current) {
+                                  const dataTransfer = new DataTransfer();
+                                  dataTransfer.items.add(file);
+                                  fileInputRef.current.files =
+                                    dataTransfer.files;
+                                  onChange(file);
+                                }
                               }
                             }
-                          }
-                        });
-                      }
-                    }}
-                    className={`${
-                      fileEnter ? "border-4" : "border-2"
-                    } mx-auto  bg-white flex flex-col w-full max-w-xs h-72 border-dashed items-center justify-center`}
-                  >
-                    <FormControl>
+                          });
+                        }
+                      }}
+                      className={cn(
+                        fileEnter
+                          ? "border-2 border-muted-foreground/50 border-dashed"
+                          : "border-2",
+                        "mx-auto box-border bg-background group w-[288px] relative grid h-[460px] cursor-pointer place-items-center rounded-lg object-fit text-center transition hover:bg-muted/25",
+                        "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      )}
+                    >
+                      {/* Invisible Input */}
+                      {form.getValues("image") ? (
+                        <Image
+                          src={URL.createObjectURL(form.getValues("image"))}
+                          className="absolute w-full h-full aspect-[72/97] z-10 "
+                          alt="cover image"
+                          width={0}
+                          height={0}
+                        />
+                      ) : (
+                        <User className="stroke-transparent fill-muted absolute w-full h-full aspect-[72/97] z-10" />
+                      )}
                       <Input
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                        full={true}
                         ref={(e) => {
                           ref(e);
                           fileInputRef.current = e;
@@ -124,11 +137,8 @@ export default function CreateNovelForm() {
                         }
                         {...fieldProps}
                       />
-                    </FormControl>
-                  </div>
-                  <FormDescription>
-                    This is the public novel name.
-                  </FormDescription>
+                    </div>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

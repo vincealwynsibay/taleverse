@@ -7,15 +7,16 @@ export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   startIcon?: LucideIcon;
   endIcon?: LucideIcon;
+  full?: boolean;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, startIcon, endIcon, ...props }, ref) => {
+  ({ className, type, startIcon, endIcon, full, ...props }, ref) => {
     const StartIcon = startIcon;
     const EndIcon = endIcon;
 
     return (
-      <div className="w-full relative">
+      <div className={cn("w-full relative z-20", full && "h-full")}>
         {StartIcon && (
           <div className="absolute left-1.5 top-1/2 transform -translate-y-1/2">
             <StartIcon size={18} className="text-muted-foreground" />
