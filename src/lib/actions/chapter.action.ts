@@ -1,22 +1,49 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { Chapter, Prisma } from "@prisma/client";
 import prisma from "../db";
 import { checkUser } from "./common";
 import { generateSlug } from "../utils";
 
-export async function getNovelPublishedChapters(novelId: number) {
+export async function getNovelPublishedChapters(novelId: number, chap_number?: number, per_page: number = 10, page: number = 1, sort: "asc" | "desc" = "asc") {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
       return isValidUser;
     }
 
+    const limit = per_page
+    const offset = (page - 1) * limit 
+
+    const [column, order] = (sort.split(".") as [
+      keyof Chapter,
+      "asc" | "desc" | undefined
+    ]) ?? ["order_number", "desc"]
+
     const chapters = await prisma.chapter.findMany({
       where: {
+        OR: [
+          {
+            order_number: chap_number
+          },
+          {
+            order_number: {
+              gte: chap_number,
+              lte: parseInt(chap_number + "9") 
+            }
+          }
+      ],
+        // search
         novelId: novelId,
         published: true
       },
+      // pagination
+      skip: offset,
+      take: per_page,
+      // sort
+      orderBy: [{
+        [column]: order
+      }]
     })
 
 
