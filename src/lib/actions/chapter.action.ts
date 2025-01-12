@@ -98,6 +98,7 @@ export async function createChapter(novelId: number) {
         novelId: novelId,
         slug: generateSlug(`chapter ${novel?._count.chapter}`),
         published: false,
+        order_number: novel?._count.chapter
       },
     });
 
