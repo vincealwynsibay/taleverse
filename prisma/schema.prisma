@@ -9,12 +9,14 @@ datasource db {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  clerkId  String   @unique
-  email    String   @unique
-  username String
-  image    String?  @default("")
-  role     UserRole @default(USER)
+  id         Int      @id @default(autoincrement())
+  clerkId    String   @unique
+  email      String   @unique
+  username   String
+  image      String?  @default("")
+  role       UserRole @default(USER)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
 
 enum UserRole {
@@ -37,14 +39,19 @@ model Novel {
   // genre
   // categories
   chapter     Chapter[]
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @default(now())
 }
 
 model Chapter {
-  id        Int     @id @default(autoincrement())
-  title     String  @unique
-  content   Json    @default("{}")
-  slug      String  @unique @default("")
-  published Boolean @default(false)
-  novel     Novel   @relation(fields: [novelId], references: [id])
-  novelId   Int
+  id           Int      @id @default(autoincrement())
+  title        String   @unique
+  content      Json     @default("{}")
+  slug         String   @unique @default("")
+  order_number Int      @unique
+  published    Boolean  @default(false)
+  novel        Novel    @relation(fields: [novelId], references: [id])
+  novelId      Int
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
 }
