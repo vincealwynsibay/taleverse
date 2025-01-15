@@ -18,20 +18,48 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
-export default function Navbar() {
+export default function Navbar({ isSticky = true }: { isSticky?: boolean }) {
   const { theme, setTheme } = useTheme();
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn } = useAuth();
   const [sheetOpen, setSheetOpen] = useState(false);
-  console.log(isSignedIn, userId);
+
+  const prevScrollPos = useRef(0);
+  const [show, setShow] = useState(true);
+
+  const handleScroll = () => {
+    const currentScrollPos = window.scrollY;
+
+    if (currentScrollPos > prevScrollPos.current) {
+      setShow(() => false);
+    } else {
+      setShow(() => true);
+    }
+
+    prevScrollPos.current = currentScrollPos;
+  };
+
+  useEffect(() => {
+    if (isSticky) {
+      window.addEventListener("scroll", handleScroll);
+      return () => window.removeEventListener("scroll", handleScroll);
+    }
+  }, [isSticky]);
 
   return (
-    <div className="border-b-[1px] border-b-border mb-4">
+    <div
+      className={cn(
+        "border-b-[1px] border-b-border mb-4  z-50 bg-background",
+        isSticky && "sticky",
+        isSticky && show ? "top-0" : ""
+      )}
+    >
       <nav className="container px-4 py-2 max-w-6xl mx-auto flex justify-between items-center gap-4 w-full">
         <div className="items-center justify-between gap-4 hidden md:flex">
           <Link href="/" className="font-bold text-lg text-teal-600">
-            taleverse.
+            taleverse.1
           </Link>
           <Link href="/" className="text-sm">
             Homepage
