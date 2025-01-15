@@ -2,7 +2,13 @@
 
 import { Chapter, Novel } from "@prisma/client";
 import MaxWidthWrapper from "./MaxWidthWrapper";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ArrowDownUp,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+} from "lucide-react";
 import Link from "next/link";
 import {
   Pagination,
@@ -10,10 +16,11 @@ import {
   PaginationEllipsis,
   PaginationItem,
 } from "@/components/ui/pagination";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { getNovelPublishedChapters } from "@/lib/actions/chapter.action";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
+import { Input } from "./ui/input";
 
 export default function ChapterList({
   slug,
@@ -28,7 +35,9 @@ export default function ChapterList({
 }) {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const chapterCount = novel._count.chapter;
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"asc" | "desc">("asc");
+  const chapterCount = useRef(0);
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -38,10 +47,12 @@ export default function ChapterList({
         novel.id,
         undefined,
         itemsPerPage,
-        1
+        1,
+        sort
       );
       if (!ignore) {
-        setChapters(initialChapters.data ?? []);
+        chapterCount.current = initialChapters.data?.totalCount ?? 0;
+        setChapters(initialChapters.data?.chapters ?? []);
       }
     };
 
@@ -57,36 +68,74 @@ export default function ChapterList({
       novel.id,
       undefined,
       itemsPerPage,
-      newPage
+      newPage,
+      sort
     );
-    console.log("mew", newChapters);
-    setChapters(newChapters.data ?? []);
+    chapterCount.current = newChapters.data?.totalCount ?? 0;
+    setChapters(() => newChapters.data?.chapters ?? []);
   };
 
-  console.log(chapters);
+  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setQuery(() => value);
+    const newChapters = await getNovelPublishedChapters(
+      novel.id,
+      parseInt(value),
+      itemsPerPage,
+      1,
+      sort
+    );
+    setCurrentPage(() => 1);
+    chapterCount.current = newChapters.data?.totalCount ?? 0;
+    setChapters(() => newChapters.data?.chapters ?? []);
+  };
 
-  // console.log(currentPage);
-  // const fetchChapters = async (page) => {
-  //   const newChapters = await getNovelPublishedChapters(
-  //     novel.id,
-  //     undefined,
-  //     2,
-  //     page
-  //   );
-  //   setChapters(newChapters.data!);
-  //   setCurrentPage(page);
-  // };
+  const handleSortClick = async () => {
+    let newSort: "asc" | "desc" = "asc";
+    setSort((prev) => {
+      if (prev === "asc") {
+        newSort = "desc";
+        return "desc";
+      } else {
+        newSort = "asc";
+        return "asc";
+      }
+    });
 
-  // console.log("chapters", chapters, novel._count.chapter);
+    const newChapters = await getNovelPublishedChapters(
+      novel.id,
+      parseInt(query),
+      itemsPerPage,
+      1,
+      newSort
+    );
+    setCurrentPage(() => 1);
+    chapterCount.current = newChapters.data?.totalCount ?? 0;
+    setChapters(() => newChapters.data?.chapters ?? []);
+  };
 
   return (
-    <MaxWidthWrapper className="mx-auto flex flex-col gap-4 px-5">
+    <MaxWidthWrapper className="mx-auto flex flex-col gap-4 px-5 mt-5">
+      <div className="flex items-center gap-4">
+        <Input
+          startIcon={Search}
+          placeholder="Enter Chapter Number"
+          onChange={handleSearchChange}
+          value={query}
+        />
+        <Button className="gap-2" onClick={handleSortClick}>
+          <ArrowDownUp />
+          {sort === "asc" ? "Newest First" : "Oldest First"}
+        </Button>
+      </div>
       {chapters.length > 0 &&
-        chapters.map((chapter, idx) => {
+        chapters.map((chapter) => {
           return (
             <Link key={chapter.id} href={`/novels/${slug}/${chapter.slug}`}>
               <div className="flex gap-8 items-center">
-                <span className="text-lg font-bold">{idx}</span>
+                <span className="text-lg font-bold">
+                  {chapter.order_number}
+                </span>
                 <div className="">
                   <p className="text-lg font-bold">{chapter.title}</p>
                   <span className="flex gap-2 items-center text-gray-400">
@@ -120,7 +169,12 @@ export default function ChapterList({
             </a>
           </PaginationItem>
           {Array.from(
-            { length: Math.min(Math.ceil(chapterCount / 2), 7) },
+            {
+              length: Math.min(
+                Math.ceil(chapterCount.current / itemsPerPage),
+                7
+              ),
+            },
             (_, i) => i + 1
           ).map((ele) => {
             return (
@@ -142,14 +196,17 @@ export default function ChapterList({
               </PaginationItem>
             );
           })}
-          {chapterCount > 7 && (
+          {chapterCount.current > 7 && (
             <>
               <PaginationItem>
                 <PaginationEllipsis />
               </PaginationItem>
               {Array.from(
-                { length: Math.min(3, chapterCount - 7) }, // Ensure we only render up to 3 pages
-                (_, i) => chapterCount - (Math.min(3, chapterCount - 7) - 1) + i
+                { length: Math.min(3, chapterCount.current - 7) }, // Ensure we only render up to 3 pages
+                (_, i) =>
+                  chapterCount.current -
+                  (Math.min(3, chapterCount.current - 7) - 1) +
+                  i
               ).map((ele) => {
                 return (
                   <PaginationItem key={ele}>
@@ -176,7 +233,9 @@ export default function ChapterList({
             <a
               onClick={async (e) => {
                 e.preventDefault();
-                if (currentPage == Math.ceil(chapterCount / itemsPerPage))
+                if (
+                  currentPage == Math.ceil(chapterCount.current / itemsPerPage)
+                )
                   return;
                 await handlePageChange(currentPage + 1);
               }}

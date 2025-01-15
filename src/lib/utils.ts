@@ -16,3 +16,7 @@ export function generateSlug(str: string): string {
           .toLowerCase()
   );
 }
+
+export function hasOnlyDigits(value: string) {
+  return /^-?\d+$/.test(value);
+}
