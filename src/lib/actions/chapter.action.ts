@@ -1,6 +1,6 @@
 "use server";
 
-import { Chapter, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import prisma from "../db";
 import { checkUser } from "./common";
 import { generateSlug } from "../utils";
@@ -11,22 +11,22 @@ export async function getNovelPublishedChapters(novelId: number, chap_number?: n
     if (!isValidUser.success) {
       return isValidUser;
     }
-
+    
     const limit = per_page
     const offset = (page - 1) * limit 
+    console.log(limit, offset, page, chap_number, sort)
 
-    const [column, order] = (sort.split(".") as [
-      keyof Chapter,
-      "asc" | "desc" | undefined
-    ]) ?? ["order_number", "desc"]
+    // const [column, order] = (sort.split(".") as [
+    //   keyof Chapter,
+    //   "asc" | "desc" | undefined
+    // ]) ?? ["order_number", "desc"]
 
-    console.log(limit, offset, page)
 
     const chapters = await prisma.chapter.findMany({
       where: {
         ...(chap_number && {OR: [
           {
-            order_number: chap_number
+            order_number: chap_number,
           },
           {
             order_number: {
@@ -42,15 +42,39 @@ export async function getNovelPublishedChapters(novelId: number, chap_number?: n
       // pagination
       skip: offset,
       take: per_page,
-      // sort
+      // // sort
       orderBy: [{
-        [column]: order
+        order_number: sort 
       }]
+    })
+
+    console.log("chap", chap_number)
+
+    const totalCount = await prisma.chapter.count({
+      where: {
+        ...(chap_number && {OR: [
+          {
+            order_number: chap_number
+          },
+          {
+              order_number: {
+                  gte: chap_number,
+                  lte: parseInt(chap_number + "9") 
+                }
+              }
+          ]}),
+          // search
+        novelId: novelId,
+        published: false
+      },
     })
 
 
     return {
-      data: chapters,
+      data: {
+        chapters,
+        totalCount
+      },
       success: true,
     };
   } catch (e) {
