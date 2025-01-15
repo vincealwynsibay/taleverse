@@ -29,7 +29,7 @@ export default async function Page({
 
       {/* all chapters */}
       <div className="flex flex-col gap-2">
-        {novel.data.chapter.length > 0 &&
+        {/* {novel.data.chapter.length > 0 &&
           novel.data.chapter.map((chapter) => {
             return (
               <div key={chapter.id} className="flex flex-row gap-3">
@@ -39,7 +39,7 @@ export default async function Page({
                 <p>{chapter.published ? "published" : "not published"}</p>
               </div>
             );
-          })}
+          })} */}
       </div>
     </div>
   );
