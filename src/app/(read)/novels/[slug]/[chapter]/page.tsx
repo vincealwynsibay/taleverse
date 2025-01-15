@@ -1,4 +1,5 @@
 import ChapterView from "@/components/ChapterView";
+import ChapterNavbar from "@/components/ChapterNavbar";
 import { getNovelChapterBySlug } from "@/lib/actions/chapter.action";
 
 export default async function Page({
@@ -14,6 +15,7 @@ export default async function Page({
 
   return (
     <div>
+      <ChapterNavbar novel={chapter.data.novel} />
       <ChapterView chapter={chapter.data} />
     </div>
   );
