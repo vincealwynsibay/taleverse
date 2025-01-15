@@ -20,9 +20,11 @@ export async function getNovelPublishedChapters(novelId: number, chap_number?: n
       "asc" | "desc" | undefined
     ]) ?? ["order_number", "desc"]
 
+    console.log(limit, offset, page)
+
     const chapters = await prisma.chapter.findMany({
       where: {
-        OR: [
+        ...(chap_number && {OR: [
           {
             order_number: chap_number
           },
@@ -32,10 +34,10 @@ export async function getNovelPublishedChapters(novelId: number, chap_number?: n
               lte: parseInt(chap_number + "9") 
             }
           }
-      ],
+      ]}),
         // search
         novelId: novelId,
-        published: true
+        published: false
       },
       // pagination
       skip: offset,

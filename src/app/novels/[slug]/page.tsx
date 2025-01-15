@@ -1,5 +1,6 @@
 import ChapterList from "@/components/ChapterList";
 import NovelView from "@/components/NovelView";
+// import { getNovelPublishedChapters } from "@/lib/actions/chapter.action";
 import { getNovel } from "@/lib/actions/novel.action";
 
 export default async function Page({
@@ -11,13 +12,14 @@ export default async function Page({
 
   if (!novel.data) return null;
 
-  console.log(novel.data.chapter);
-  const chapters = novel.data.chapter;
+  // const chapters = await getNovelPublishedChapters(novel.data.id);
+
+  // if (!chapters.data) return null;
+
   return (
     <div>
       <NovelView novel={novel.data} />
-
-      <ChapterList slug={novel.data.slug} chapters={chapters} />
+      <ChapterList slug={novel.data.slug} novel={novel.data} />
     </div>
   );
 }

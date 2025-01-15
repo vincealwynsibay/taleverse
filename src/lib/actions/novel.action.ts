@@ -99,7 +99,11 @@ export async function getNovel(slug: string) {
         slug: slug,
       },
       include: {
-        chapter: true
+        _count: {
+          select: {
+            chapter: true
+          }
+        }
       }
     });
 
