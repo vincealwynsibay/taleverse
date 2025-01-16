@@ -1,7 +1,6 @@
 import CreateChapterButton from "@/components/CreateChapterButton";
-import { getNovel } from "@/lib/actions/novel.action";
+import { getNovelBySlug } from "@/lib/actions/novel.action";
 import { getCurrentUser } from "@/lib/actions/user.action";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function Page({
@@ -15,7 +14,7 @@ export default async function Page({
   }
 
   const slug = (await params).slug;
-  const novel = await getNovel(slug);
+  const novel = await getNovelBySlug(slug);
 
   if (!novel.data) return null;
 

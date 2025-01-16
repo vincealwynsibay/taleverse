@@ -1,14 +1,14 @@
 import ChapterList from "@/components/ChapterList";
 import NovelView from "@/components/NovelView";
 // import { getNovelPublishedChapters } from "@/lib/actions/chapter.action";
-import { getNovel } from "@/lib/actions/novel.action";
+import { getNovelBySlug } from "@/lib/actions/novel.action";
 
 export default async function Page({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const novel = await getNovel((await params).slug);
+  const novel = await getNovelBySlug((await params).slug);
 
   if (!novel.data) return null;
 

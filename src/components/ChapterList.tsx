@@ -17,7 +17,7 @@ import {
   PaginationItem,
 } from "@/components/ui/pagination";
 import React, { useEffect, useRef, useState } from "react";
-import { getNovelPublishedChapters } from "@/lib/actions/chapter.action";
+import { getNovelPublishedChaptersWithPagination } from "@/lib/actions/chapter.action";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "./ui/button";
 import { Input } from "./ui/input";
@@ -43,7 +43,7 @@ export default function ChapterList({
   useEffect(() => {
     let ignore = false;
     const initializeChapters = async () => {
-      const initialChapters = await getNovelPublishedChapters(
+      const initialChapters = await getNovelPublishedChaptersWithPagination(
         novel.id,
         undefined,
         itemsPerPage,
@@ -64,7 +64,7 @@ export default function ChapterList({
 
   const handlePageChange = async (newPage: number) => {
     setCurrentPage(() => newPage);
-    const newChapters = await getNovelPublishedChapters(
+    const newChapters = await getNovelPublishedChaptersWithPagination(
       novel.id,
       undefined,
       itemsPerPage,
@@ -78,7 +78,7 @@ export default function ChapterList({
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
     setQuery(() => value);
-    const newChapters = await getNovelPublishedChapters(
+    const newChapters = await getNovelPublishedChaptersWithPagination(
       novel.id,
       parseInt(value),
       itemsPerPage,
@@ -102,7 +102,7 @@ export default function ChapterList({
       }
     });
 
-    const newChapters = await getNovelPublishedChapters(
+    const newChapters = await getNovelPublishedChaptersWithPagination(
       novel.id,
       parseInt(query),
       itemsPerPage,

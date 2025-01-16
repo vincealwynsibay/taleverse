@@ -87,7 +87,34 @@ export async function getNovels() {
   }
 }
 
-export async function getNovel(slug: string) {
+export async function getNovel(novelId: number) {
+  try {
+    const isValidUser = await checkUser();
+    if (!isValidUser.success) {
+      return isValidUser;
+    }
+
+    const novel = await prisma.novel.findFirst({
+      where: {
+        id: novelId
+      },
+      include: {
+        _count: {
+          select: {
+            chapter: true
+          }
+        }
+      }
+    });
+
+    return {
+      data: novel,
+    };
+  } catch (e) {
+    return { message: e.message, success: false };
+  }
+}
+export async function getNovelBySlug(slug: string) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
