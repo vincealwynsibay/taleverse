@@ -21,6 +21,8 @@ export default function Editor() {
     checkListItem,
     bulletListItem,
     codeBlock,
+    video,
+    file,
     ...remainingDefaultSpecs
   } = defaultBlockSpecs;
 
