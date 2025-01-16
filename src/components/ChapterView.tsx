@@ -14,8 +14,6 @@ export default function ChapterView({
       <div className="flex flex-col gap-2">
         <h1 className="text-lg font-bold">{chapter.title}</h1>
         <ChapterContent content={chapter.content} />
-        <ChapterContent content={chapter.content} />
-        <ChapterContent content={chapter.content} />
       </div>
     </MaxWidthWrapper>
   );
