@@ -1,8 +1,14 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Novel } from "@prisma/client";
-import { ChevronLeft, ChevronRight, List, Settings } from "lucide-react";
+import { Chapter, Novel } from "@prisma/client";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  List,
+  Settings,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -16,9 +22,22 @@ import {
 } from "./ui/sheet";
 import MaxWidthWrapper from "./MaxWidthWrapper";
 
-export default function ChapterNavbar({ novel }: { novel: Novel }) {
+export default function ChapterNavbar({
+  chapter,
+  chapters,
+}: {
+  chapter: Chapter & { novel: Novel };
+  chapters: Chapter[];
+}) {
   const prevScrollPos = useRef(0);
   const [show, setShow] = useState(true);
+  const novel = chapter.novel;
+  const prevChapter = chapters.find(
+    (c) => c.order_number === chapter.order_number - 1
+  );
+  const nextChapter = chapters.find(
+    (c) => c.order_number === chapter.order_number + 1
+  );
 
   const handleScroll = () => {
     const currentScrollPos = window.scrollY;
@@ -49,7 +68,11 @@ export default function ChapterNavbar({ novel }: { novel: Novel }) {
       <MaxWidthWrapper className="mx-auto py-2 flex flex-row flex-1 flex-grow  items-stretch justify-between ">
         <div className="flex items-end gap-4">
           <Link
-            href="#"
+            href={
+              prevChapter
+                ? `/novels/${novel.slug}/${prevChapter.slug}`
+                : `/novels/${novel.slug}`
+            }
             className={cn(
               "gap-1 pl-2.5 cursor-pointer ",
               buttonVariants({
@@ -62,16 +85,18 @@ export default function ChapterNavbar({ novel }: { novel: Novel }) {
           </Link>
 
           <div className="flex flex-row items-end gap-4">
-            <Image
-              className="w-8 object-contain"
-              src={"/assets/bookcover.png"}
-              width={0}
-              height={0}
-              sizes="100vw"
-              alt={`${novel.title} cover`}
-            />
+            <Link href={`/novels/${novel.slug}`}>
+              <Image
+                className="w-8 object-contain"
+                src={"/assets/bookcover.png"}
+                width={0}
+                height={0}
+                sizes="100vw"
+                alt={`${novel.title} cover`}
+              />
+            </Link>
             <div className="flex flex-col">
-              <span className=" font-bold ">Chapter 12</span>
+              <span className=" font-bold ">{chapter.title}</span>
               <span className="text-sm text-muted-foreground">
                 {novel.title}
               </span>
@@ -86,10 +111,30 @@ export default function ChapterNavbar({ novel }: { novel: Novel }) {
                 <List />
               </Button>
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent className="overflow-y-scroll">
               <SheetHeader>
                 <SheetTitle>Chapter List</SheetTitle>
               </SheetHeader>
+              <div className="flex flex-col gap-4 mt-5">
+                {chapters.length > 0 &&
+                  chapters.map((c) => {
+                    return (
+                      <Link key={c.id} href={`/novels/${novel.slug}/${c.slug}`}>
+                        <div className="flex gap-8 items-center">
+                          <span className="text-lg font-bold">
+                            {c.order_number}
+                          </span>
+                          <div className="">
+                            <p className="text-lg font-bold">{c.title}</p>
+                            <span className="flex gap-2 items-center text-gray-400">
+                              <Calendar className="w-4 h-4" /> June 1, 2024
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+              </div>
             </SheetContent>
           </Sheet>
 
@@ -107,7 +152,11 @@ export default function ChapterNavbar({ novel }: { novel: Novel }) {
           </Sheet>
 
           <Link
-            href="#"
+            href={
+              nextChapter
+                ? `/novels/${novel.slug}/${nextChapter.slug}`
+                : `/novels/${novel.slug}`
+            }
             className={cn(
               "gap-1 pl-2.5 cursor-pointer",
               buttonVariants({

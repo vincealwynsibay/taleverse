@@ -5,76 +5,122 @@ import prisma from "../db";
 import { checkUser } from "./common";
 import { generateSlug } from "../utils";
 
-export async function getNovelPublishedChapters(novelId: number, chap_number?: number, per_page: number = 10, page: number = 1, sort: "asc" | "desc" = "asc") {
+export async function getNovelPublishedChaptersWithPagination(
+  novelId: number,
+  chap_number?: number,
+  per_page: number = 10,
+  page: number = 1,
+  sort: "asc" | "desc" = "asc"
+) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
       return isValidUser;
     }
-    
-    const limit = per_page
-    const offset = (page - 1) * limit 
-    console.log(limit, offset, page, chap_number, sort)
+
+    const limit = per_page;
+    const offset = (page - 1) * limit;
+    console.log(limit, offset, page, chap_number, sort);
 
     // const [column, order] = (sort.split(".") as [
     //   keyof Chapter,
     //   "asc" | "desc" | undefined
     // ]) ?? ["order_number", "desc"]
 
-
     const chapters = await prisma.chapter.findMany({
       where: {
-        ...(chap_number && {OR: [
-          {
-            order_number: chap_number,
-          },
-          {
-            order_number: {
-              gte: chap_number,
-              lte: parseInt(chap_number + "9") 
-            }
-          }
-      ]}),
+        ...(chap_number && {
+          OR: [
+            {
+              order_number: chap_number,
+            },
+            {
+              order_number: {
+                gte: chap_number,
+                lte: parseInt(chap_number + "9"),
+              },
+            },
+          ],
+        }),
         // search
         novelId: novelId,
-        published: false
+        published: false,
       },
       // pagination
       skip: offset,
       take: per_page,
       // // sort
-      orderBy: [{
-        order_number: sort 
-      }]
-    })
+      orderBy: [
+        {
+          order_number: sort,
+        },
+      ],
+    });
 
-    console.log("chap", chap_number)
+    console.log("chap", chap_number);
 
     const totalCount = await prisma.chapter.count({
       where: {
-        ...(chap_number && {OR: [
-          {
-            order_number: chap_number
-          },
-          {
+        ...(chap_number && {
+          OR: [
+            {
+              order_number: chap_number,
+            },
+            {
               order_number: {
-                  gte: chap_number,
-                  lte: parseInt(chap_number + "9") 
-                }
-              }
-          ]}),
-          // search
+                gte: chap_number,
+                lte: parseInt(chap_number + "9"),
+              },
+            },
+          ],
+        }),
+        // search
         novelId: novelId,
-        published: false
+        published: false,
       },
-    })
-
+    });
 
     return {
       data: {
         chapters,
-        totalCount
+        totalCount,
       },
+      success: true,
+    };
+  } catch (e) {
+    return { message: e.message, success: false };
+  }
+}
+
+export async function getNovelPublishedChapters(
+  novelId: number,
+  sort: "asc" | "desc" = "asc"
+) {
+  try {
+    const isValidUser = await checkUser();
+    if (!isValidUser.success) {
+      return isValidUser;
+    }
+
+    const chapters = await prisma.chapter.findMany({
+      where: {
+        // search
+        novelId: novelId,
+        published: false,
+      },
+      include: {
+        novel: true,
+      },
+      // sort
+      orderBy: [
+        {
+          order_number: sort,
+        },
+      ],
+    });
+
+    return {
+      data: chapters,
       success: true,
     };
   } catch (e) {
@@ -94,22 +140,22 @@ export async function publishChapter(chapterId: number) {
         id: chapterId,
       },
       include: {
-        novel: true
-      }
+        novel: true,
+      },
     });
 
     if (!chapter) {
-      throw new Error("Chapter not found.")
+      throw new Error("Chapter not found.");
     }
 
     const updatedChapter = await prisma.chapter.update({
       where: {
-        id: chapterId
+        id: chapterId,
       },
       data: {
-        published: true
-      }
-    })
+        published: true,
+      },
+    });
 
     return {
       data: updatedChapter,
@@ -119,7 +165,6 @@ export async function publishChapter(chapterId: number) {
     return { message: e.message, success: false };
   }
 }
-
 
 export async function createChapter(novelId: number) {
   try {
@@ -142,7 +187,7 @@ export async function createChapter(novelId: number) {
     });
 
     if (!novel) {
-      throw new Error("Novel not found.")
+      throw new Error("Novel not found.");
     }
 
     const chapter = await prisma.chapter.create({
@@ -151,7 +196,7 @@ export async function createChapter(novelId: number) {
         novelId: novelId,
         slug: generateSlug(`chapter ${novel?._count.chapter}`),
         published: false,
-        order_number: novel?._count.chapter
+        order_number: novel?._count.chapter,
       },
     });
 
@@ -177,8 +222,8 @@ export async function getNovelChapter(chapterId: number) {
         id: chapterId,
       },
       include: {
-        novel: true
-      }
+        novel: true,
+      },
     });
 
     return {
@@ -203,7 +248,7 @@ export async function getNovelChapterBySlug(slug: string) {
       },
       include: {
         novel: true
-      }
+      },
     });
 
     return {
@@ -215,7 +260,10 @@ export async function getNovelChapterBySlug(slug: string) {
   }
 }
 
-export async function updateChapterContent(chapterId: number, newContent: string) {
+export async function updateChapterContent(
+  chapterId: number,
+  newContent: string
+) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
@@ -229,31 +277,34 @@ export async function updateChapterContent(chapterId: number, newContent: string
     });
 
     if (!chapter) {
-      throw new Error("Chapter not found.")
+      throw new Error("Chapter not found.");
     }
 
-    console.log(JSON.parse(newContent))
+    console.log(JSON.parse(newContent));
 
     const updatedChapter = await prisma.chapter.update({
       where: {
         id: chapterId,
       },
       data: {
-        content: JSON.parse(newContent) as Prisma.JsonArray
-      }
-    })
+        content: JSON.parse(newContent) as Prisma.JsonArray,
+      },
+    });
 
     return {
       data: updatedChapter,
       success: true,
     };
   } catch (e) {
-    console.error(e.message)
+    console.error(e.message);
     return { message: e.message, success: false };
   }
 }
 
-export async function updateChapter(chapterId: number, chapterObject: {content: string, title: string}) {
+export async function updateChapter(
+  chapterId: number,
+  chapterObject: { content: string; title: string }
+) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
@@ -267,9 +318,8 @@ export async function updateChapter(chapterId: number, chapterObject: {content: 
     });
 
     if (!chapter) {
-      throw new Error("Chapter not found.")
+      throw new Error("Chapter not found.");
     }
-
 
     const updatedChapter = await prisma.chapter.update({
       where: {
@@ -277,20 +327,19 @@ export async function updateChapter(chapterId: number, chapterObject: {content: 
       },
       data: {
         title: chapterObject.title,
-        content: JSON.parse(chapterObject.content) as Prisma.JsonArray
-      }
-    })
+        content: JSON.parse(chapterObject.content) as Prisma.JsonArray,
+      },
+    });
 
     return {
       data: updatedChapter,
       success: true,
     };
   } catch (e) {
-    console.error(e.message)
+    console.error(e.message);
     return { message: e.message, success: false };
   }
 }
-
 
 export async function updateChapterTitle(chapterId: number, newTitle: string) {
   try {
@@ -306,18 +355,17 @@ export async function updateChapterTitle(chapterId: number, newTitle: string) {
     });
 
     if (!chapter) {
-      throw new Error("Chapter not found.")
+      throw new Error("Chapter not found.");
     }
-
 
     const updatedChapter = await prisma.chapter.update({
       where: {
         id: chapterId,
       },
       data: {
-        title: newTitle
-      }
-    })
+        title: newTitle,
+      },
+    });
 
     return {
       data: updatedChapter,
