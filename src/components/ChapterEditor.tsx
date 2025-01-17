@@ -62,29 +62,39 @@ export default function ChapterEditor({
     uploadFile,
     _tiptapOptions: {
       editorProps: {
-        // handleKeyDown: (_, event) => {
-        //   if (event.key === "Tab") {
-        //     console.log("happens");
-        //     return;
-        //   }
-        // },
-        // transformPasted: (slice) => {
-        // },
-        // handlePaste: (_, event) => {
-        //   // Get the pasted text
-        //   return true;
-        // },
+        handleDOMEvents: {
+          drop: () => true,
+        },
+        handleKeyDown: (_, event) => {
+          // Disable tab key
+          if (event.key === "Tab") {
+            event.preventDefault();
+            return true;
+          }
+          return false;
+        },
+        transformPastedText: (text) => {
+          // Remove all types of whitespace from the start of lines
+          return text
+            .split("\n")
+            .map((line) => line.replace(/^[\s\t]+/, ""))
+            .join("\n");
+        },
+        transformPastedHTML: (html) => {
+          // Remove any margin, padding, or text-indent CSS properties
+          return html.replace(/style="[^"]*"/g, (match) => {
+            return match
+              .replace(/margin-left:[^;"]+;?/g, "")
+              .replace(/padding-left:[^;"]+;?/g, "")
+              .replace(/text-indent:[^;"]+;?/g, "");
+          });
+        },
       },
     },
   });
 
   return (
-    <BlockNoteView
-      onChange={() => handleContentChange(editor.document)}
-      editor={editor}
-      theme={theme === "light" ? lightDefaultTheme : darkDefaultTheme}
-      formattingToolbar={false}
-    >
+    <BlockNoteView editor={editor} formattingToolbar={false}>
       <FormattingToolbarController
         formattingToolbar={() => (
           <FormattingToolbar>
