@@ -28,14 +28,19 @@ export default function ChapterNavbar({
   chapters,
   config,
   handleFontFamilyChange,
+  handlePrevFontSize,
+  handleNextFontSize,
 }: {
   chapter: Chapter & { novel: Novel };
   chapters: Chapter[];
   config: {
     fontFamily: string;
-    fontSize: number;
+    fontSizeIndex: number;
   };
   handleFontFamilyChange: Dispatch<SetStateAction<string>>;
+
+  handlePrevFontSize: () => void;
+  handleNextFontSize: () => void;
 }) {
   const prevScrollPos = useRef(0);
   const [show, setShow] = useState(true);
@@ -155,6 +160,18 @@ export default function ChapterNavbar({
             <SheetContent>
               <SheetHeader>
                 <SheetTitle>Settings</SheetTitle>
+
+                <h3>Font Size</h3>
+                <p>{fontSizes[config.fontSizeIndex].name}</p>
+
+                <div className="flex items-center gap-2">
+                  <Button onClick={() => handlePrevFontSize()}>
+                    <ChevronLeft />
+                  </Button>
+                  <Button onClick={() => handleNextFontSize()}>
+                    <ChevronRight />
+                  </Button>
+                </div>
 
                 {/* three buttons for font family */}
                 <h3>Font Family</h3>
