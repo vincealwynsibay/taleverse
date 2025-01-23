@@ -1,5 +1,4 @@
-import ChapterView from "@/components/ChapterView";
-import ChapterNavbar from "@/components/ChapterNavbar";
+import ChapterReader from "@/components/ChapterReader";
 import {
   getNovelChapterBySlug,
   getNovelPublishedChapters,
@@ -20,14 +19,9 @@ export default async function Page({
 
   if (!chapters.data) return null;
 
-  // const html = await editor.withReactContext(
-  //   ({ children }: {children: React}) => <div>{children}</div>,
-  //   async () => editor.blocksToFullHTML(blocks)
-  // );
   return (
     <div>
-      <ChapterNavbar chapters={chapters.data} chapter={chapter.data} />
-      <ChapterView chapter={chapter.data} />
+      <ChapterReader chapters={chapters.data} chapter={chapter.data} />
     </div>
   );
 }

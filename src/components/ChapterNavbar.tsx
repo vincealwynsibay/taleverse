@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Button, buttonVariants } from "./ui/button";
 import {
   Sheet,
@@ -21,13 +21,21 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import MaxWidthWrapper from "./MaxWidthWrapper";
+import { fontSizes } from "@/lib/common";
 
 export default function ChapterNavbar({
   chapter,
   chapters,
+  config,
+  handleFontFamilyChange,
 }: {
   chapter: Chapter & { novel: Novel };
   chapters: Chapter[];
+  config: {
+    fontFamily: string;
+    fontSize: number;
+  };
+  handleFontFamilyChange: Dispatch<SetStateAction<string>>;
 }) {
   const prevScrollPos = useRef(0);
   const [show, setShow] = useState(true);
@@ -147,6 +155,18 @@ export default function ChapterNavbar({
             <SheetContent>
               <SheetHeader>
                 <SheetTitle>Settings</SheetTitle>
+
+                {/* three buttons for font family */}
+                <h3>Font Family</h3>
+                <Button onClick={() => handleFontFamilyChange("font-sans")}>
+                  Sans
+                </Button>
+                <Button onClick={() => handleFontFamilyChange("font-serif")}>
+                  Serif
+                </Button>
+                <Button onClick={() => handleFontFamilyChange("font-mono")}>
+                  Mono
+                </Button>
               </SheetHeader>
             </SheetContent>
           </Sheet>
