@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, buttonVariants } from "./ui/button";
 import {
   Sheet,
@@ -37,7 +37,7 @@ export default function ChapterNavbar({
     fontFamily: string;
     fontSizeIndex: number;
   };
-  handleFontFamilyChange: Dispatch<SetStateAction<string>>;
+  handleFontFamilyChange: (value: string) => void;
 
   handlePrevFontSize: () => void;
   handleNextFontSize: () => void;
