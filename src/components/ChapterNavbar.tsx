@@ -16,6 +16,7 @@ import { Button, buttonVariants } from "./ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -159,31 +160,85 @@ export default function ChapterNavbar({
             </SheetTrigger>
             <SheetContent>
               <SheetHeader>
-                <SheetTitle>Settings</SheetTitle>
+                <SheetTitle>Reader Settings</SheetTitle>
+                <SheetDescription>
+                  Style the text the way you want.
+                </SheetDescription>
 
-                <h3>Font Size</h3>
-                <p>{fontSizes[config.fontSizeIndex].name}</p>
+                <div className="flex items-center justify-between mt-8 ">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-sm font-bold">Font Size</h3>
+                    <p className="text-sm">
+                      {fontSizes[config.fontSizeIndex].name}
+                    </p>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <Button onClick={() => handlePrevFontSize()}>
-                    <ChevronLeft />
-                  </Button>
-                  <Button onClick={() => handleNextFontSize()}>
-                    <ChevronRight />
-                  </Button>
+                  <div className="flex items-center gap-4">
+                    <Button
+                      variant={"outline"}
+                      onClick={() => handlePrevFontSize()}
+                      disabled={config.fontSizeIndex == 0}
+                    >
+                      <ChevronLeft />
+                    </Button>
+
+                    <p
+                      className={cn(
+                        "min-w-[40px] text-center",
+                        config.fontFamily,
+                        `${fontSizes[config.fontSizeIndex].size}`
+                      )}
+                    >
+                      Aa
+                    </p>
+
+                    <Button
+                      variant={"outline"}
+                      onClick={() => handleNextFontSize()}
+                      disabled={config.fontSizeIndex == fontSizes.length - 1}
+                    >
+                      <ChevronRight />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* three buttons for font family */}
-                <h3>Font Family</h3>
-                <Button onClick={() => handleFontFamilyChange("font-sans")}>
-                  Sans
-                </Button>
-                <Button onClick={() => handleFontFamilyChange("font-serif")}>
-                  Serif
-                </Button>
-                <Button onClick={() => handleFontFamilyChange("font-mono")}>
-                  Mono
-                </Button>
+                <div className="">
+                  <h3 className="text-sm font-bold">Font Family</h3>
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                    <Button
+                      variant={"outline"}
+                      className="py-12 font-bold font-sans flex flex-col"
+                      onClick={() => handleFontFamilyChange("font-sans")}
+                    >
+                      <div className="text-sm font-medium">Sans</div>
+                      <div className="text-xs inline-block font-light whitespace-normal">
+                        Modern and Simple
+                      </div>
+                    </Button>
+                    <Button
+                      variant={"outline"}
+                      className="py-12 font-bold font-serif flex flex-col"
+                      onClick={() => handleFontFamilyChange("font-serif")}
+                    >
+                      <div className="text-sm font-medium">Serif</div>
+                      <div className="text-xs inline-block font-light whitespace-normal">
+                        {" "}
+                        Classic and Elegant
+                      </div>
+                    </Button>
+                    <Button
+                      variant={"outline"}
+                      className="py-12 font-bold font-mono flex flex-col"
+                      onClick={() => handleFontFamilyChange("font-mono")}
+                    >
+                      <div className="text-sm font-medium">Mono</div>
+                      <div className="text-xs inline-block font-light whitespace-normal">
+                        Fixed-width
+                      </div>
+                    </Button>
+                  </div>
+                </div>
               </SheetHeader>
             </SheetContent>
           </Sheet>
