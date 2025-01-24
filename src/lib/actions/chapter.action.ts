@@ -97,11 +97,6 @@ export async function getNovelPublishedChapters(
   sort: "asc" | "desc" = "asc"
 ) {
   try {
-    const isValidUser = await checkUser();
-    if (!isValidUser.success) {
-      return isValidUser;
-    }
-
     const chapters = await prisma.chapter.findMany({
       where: {
         // search
@@ -237,11 +232,6 @@ export async function getNovelChapter(chapterId: number) {
 
 export async function getNovelChapterBySlug(slug: string) {
   try {
-    const isValidUser = await checkUser();
-    if (!isValidUser.success) {
-      return isValidUser;
-    }
-
     const chapter = await prisma.chapter.findFirst({
       where: {
         slug: slug,
