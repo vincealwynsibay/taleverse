@@ -79,6 +79,8 @@ export default function WriteChapterForm({
     }
   };
 
+  console.log(blocks);
+
   return (
     <div className="flex flex-col gap-2">
       <div className="">
