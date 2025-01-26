@@ -1,9 +1,37 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
+import { Chapter, Novel, Prisma } from "@prisma/client";
 import prisma from "../db";
 import { checkUser } from "./common";
 import { generateSlug } from "../utils";
+
+export async function getChapterByOrderNumber(novelId: number, order_number: number) {
+  try {
+
+    const chapter = await prisma.chapter.findFirst({
+      where: {
+        novelId: novelId,
+        order_number: order_number,
+      },
+      include: {
+        novel: true
+      }
+    });
+
+    if (!chapter)  {
+      throw new Error("Chapter does not exist")
+    }
+
+    return {
+      data: {
+        chapter,
+      },
+      success: true,
+    };
+  } catch (e) {
+    return { message: e.message, success: false };
+  }
+}
 
 export async function getNovelPublishedChaptersWithPagination(
   novelId: number,
@@ -90,6 +118,35 @@ export async function getNovelPublishedChaptersWithPagination(
   } catch (e) {
     return { message: e.message, success: false };
   }
+}
+
+export async function getPrevNextChapters({
+  novelId,
+  currentOrderNumber,
+  offset,
+  direction,
+}: {
+  novelId: number;
+  currentOrderNumber: number;
+  offset: number;
+  direction: string;
+}) {
+const targetChapterNumber =
+    direction === "prev"  
+      ? currentOrderNumber - (offset)
+      : currentOrderNumber + (offset);
+
+  // Fetch the chapter
+  const chapter : Chapter & { novel: Novel } | null  = await prisma.chapter.findFirst({
+    where: {
+      order_number: targetChapterNumber,
+    },
+    include: {
+      novel: true
+    }
+  });
+
+  return chapter;
 }
 
 export async function getNovelPublishedChapters(

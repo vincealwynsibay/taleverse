@@ -5,6 +5,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
+import { ReactQueryClientProvider } from "@/providers/ReactQueryClientProvider";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -31,7 +32,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body
           className={`inter antialiased
-          `}
+            `}
         >
           <ThemeProvider
             attribute="class"
@@ -39,7 +40,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <ReactQueryClientProvider>{children}</ReactQueryClientProvider>
           </ThemeProvider>
         </body>
       </html>

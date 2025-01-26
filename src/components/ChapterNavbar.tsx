@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
 import { Button, buttonVariants } from "./ui/button";
 import {
   Sheet,
@@ -27,11 +26,13 @@ import { fontSizes } from "@/lib/common";
 export default function ChapterNavbar({
   chapter,
   chapters,
+  show,
   config,
   handleFontFamilyChange,
   handlePrevFontSize,
   handleNextFontSize,
 }: {
+  show: boolean;
   chapter: Chapter & { novel: Novel };
   chapters: Chapter[];
   config: {
@@ -43,8 +44,6 @@ export default function ChapterNavbar({
   handlePrevFontSize: () => void;
   handleNextFontSize: () => void;
 }) {
-  const prevScrollPos = useRef(0);
-  const [show, setShow] = useState(true);
   const novel = chapter.novel;
   const prevChapter = chapters.find(
     (c) => c.order_number === chapter.order_number - 1
@@ -52,23 +51,6 @@ export default function ChapterNavbar({
   const nextChapter = chapters.find(
     (c) => c.order_number === chapter.order_number + 1
   );
-
-  const handleScroll = () => {
-    const currentScrollPos = window.scrollY;
-
-    if (currentScrollPos > prevScrollPos.current) {
-      setShow(() => false);
-    } else {
-      setShow(() => true);
-    }
-
-    prevScrollPos.current = currentScrollPos;
-  };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   if (!novel) return null;
 

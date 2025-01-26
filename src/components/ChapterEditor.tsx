@@ -94,7 +94,11 @@ export default function ChapterEditor({
   });
 
   return (
-    <BlockNoteView editor={editor} formattingToolbar={false}>
+    <BlockNoteView
+      editor={editor}
+      formattingToolbar={false}
+      onChange={() => handleContentChange(editor.document)}
+    >
       <FormattingToolbarController
         formattingToolbar={() => (
           <FormattingToolbar>

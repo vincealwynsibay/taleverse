@@ -1,5 +1,3 @@
-import Navbar from "@/components/Navbar";
-
 export default async function Layout({
   children,
 }: Readonly<{
@@ -7,7 +5,7 @@ export default async function Layout({
 }>) {
   return (
     <div>
-      <Navbar isSticky={false} />
+      {/* <Navbar isSticky={false} /> */}
       {children}
     </div>
   );
