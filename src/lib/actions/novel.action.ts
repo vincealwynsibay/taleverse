@@ -8,7 +8,29 @@ import { Prisma } from "@prisma/client";
 import { generateSlug } from "../utils";
 
 
-// draft for action 2
+// 
+export async function getNovelByQuery(query: string) {
+  console.log(query)
+  try {
+
+    const novels = (await prisma.novel.findMany({
+      where: {
+        title: {
+          contains: query,
+          mode: 'insensitive'
+        }
+      }
+    })) ?? [];
+
+    return {
+      data: novels,
+    };
+  } catch (e) {
+    return { message: e.message, success: false };
+  }
+}
+
+
 export async function createNovel(
   prevState: FormState,
   formData: FormData

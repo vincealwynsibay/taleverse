@@ -18,13 +18,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { getNovelByQuery } from "@/lib/actions/novel.action";
+import Image from "next/image";
 
 export default function Navbar({ isSticky = true }: { isSticky?: boolean }) {
   const { theme, setTheme } = useTheme();
   const { isSignedIn } = useAuth();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const { data: novelResults, isLoading } = useQuery({
+    queryKey: ["novel", query],
+    queryFn: async ({ queryKey: [_, q] }) => {
+      console.log("q", q);
+      const data = await getNovelByQuery(q);
+      return data.data;
+    },
+    refetchOnMount: false,
+  });
+
+  console.log(novelResults, isLoading);
 
   const prevScrollPos = useRef(0);
   const [show, setShow] = useState(true);
@@ -39,6 +55,10 @@ export default function Navbar({ isSticky = true }: { isSticky?: boolean }) {
     }
 
     prevScrollPos.current = currentScrollPos;
+  };
+
+  const handleQueryChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setQuery(() => e.target.value);
   };
 
   useEffect(() => {
@@ -104,7 +124,34 @@ export default function Navbar({ isSticky = true }: { isSticky?: boolean }) {
         </div>
 
         <div className="w-full h-fit relative">
-          <Input startIcon={Search} placeholder="Search by title or author" />
+          <Input
+            startIcon={Search}
+            value={query}
+            onChange={handleQueryChange}
+            placeholder="Search by title or author"
+          />
+
+          <div className="absolute bg-background top-[60px] shadow-md rounded w-[300px]">
+            {novelResults &&
+              novelResults.map((result) => {
+                return (
+                  <Link href={`/admin/novels/${result.slug}`} key={result.id}>
+                    <div className="flex items-center gap-4">
+                      <Image
+                        className="w-8 aspect-auto"
+                        width={0}
+                        height={0}
+                        sizes="100vw"
+                        src={"/assets/bookcover.png"}
+                        alt="book cover"
+                      />
+
+                      <div className="">{result.title}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
