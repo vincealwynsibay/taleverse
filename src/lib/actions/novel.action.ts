@@ -10,14 +10,19 @@ import { generateSlug } from "../utils";
 
 // 
 export async function getNovelByQuery(query: string) {
-  console.log(query)
   try {
-
     const novels = (await prisma.novel.findMany({
       where: {
         title: {
           contains: query,
           mode: 'insensitive'
+        }
+      },
+      include: {
+        _count: {
+          select: {
+            chapter: true
+          }
         }
       }
     })) ?? [];

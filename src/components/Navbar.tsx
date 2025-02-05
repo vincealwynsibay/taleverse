@@ -2,7 +2,16 @@
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { BookText, House, Menu, Moon, Search, Sun, User } from "lucide-react";
+import {
+  BookOpenText,
+  BookText,
+  House,
+  Menu,
+  Moon,
+  Search,
+  Sun,
+  User,
+} from "lucide-react";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import {
   Sheet,
@@ -32,8 +41,10 @@ export default function Navbar({ isSticky = true }: { isSticky?: boolean }) {
 
   const { data: novelResults, isLoading } = useQuery({
     queryKey: ["novel", query],
-    queryFn: async ({ queryKey: [_, q] }) => {
-      console.log("q", q);
+    queryFn: async ({ queryKey: [, q] }) => {
+      if (!q) {
+        return;
+      }
       const data = await getNovelByQuery(q);
       return data.data;
     },
@@ -146,7 +157,16 @@ export default function Navbar({ isSticky = true }: { isSticky?: boolean }) {
                         alt="book cover"
                       />
 
-                      <div className="">{result.title}</div>
+                      <p className="text-sm font-normal">{result.title}</p>
+                      <div className="pr-8">
+                        <span className="text-sm font-light">Chapters</span>
+                        <div className="flex flex-row items-center gap-2">
+                          <BookOpenText className="w-4 h-4" />{" "}
+                          <span className="text-lg font-bold">
+                            {result._count.chapter}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </Link>
                 );
