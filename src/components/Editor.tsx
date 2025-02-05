@@ -10,7 +10,7 @@ import {
 import "@blocknote/mantine/style.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { defaultBlockSpecs, BlockNoteSchema } from "@blocknote/core";
-import { uploadFile } from "@/lib/actions/common";
+import { uploadImage } from "@/lib/actions/common";
 import { useTheme } from "next-themes";
 
 export default function Editor() {
@@ -35,7 +35,7 @@ export default function Editor() {
     },
   });
 
-  const editor = useCreateBlockNote({ schema, uploadFile });
+  const editor = useCreateBlockNote({ schema, uploadFile: uploadImage });
   return (
     <BlockNoteView
       editor={editor}
