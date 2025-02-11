@@ -5,21 +5,23 @@ import prisma from "../db";
 import { checkUser } from "./common";
 import { generateSlug } from "../utils";
 
-export async function getChapterByOrderNumber(novelId: number, order_number: number) {
+export async function getChapterByOrderNumber(
+  novelId: number,
+  order_number: number
+) {
   try {
-
     const chapter = await prisma.chapter.findFirst({
       where: {
         novelId: novelId,
         order_number: order_number,
       },
       include: {
-        novel: true
-      }
+        novel: true,
+      },
     });
 
-    if (!chapter)  {
-      throw new Error("Chapter does not exist")
+    if (!chapter) {
+      throw new Error("Chapter does not exist");
     }
 
     return {
@@ -72,7 +74,9 @@ export async function getNovelPublishedChaptersWithPagination(
         }),
         // search
         novelId: novelId,
-        published: false,
+        publishedAt: {
+          gte: new Date(),
+        },
       },
       // pagination
       skip: offset,
@@ -104,7 +108,9 @@ export async function getNovelPublishedChaptersWithPagination(
         }),
         // search
         novelId: novelId,
-        published: false,
+        publishedAt: {
+          gte: new Date(),
+        },
       },
     });
 
@@ -121,7 +127,6 @@ export async function getNovelPublishedChaptersWithPagination(
 }
 
 export async function getPrevNextChapters({
-  novelId,
   currentOrderNumber,
   offset,
   direction,
@@ -131,20 +136,21 @@ export async function getPrevNextChapters({
   offset: number;
   direction: string;
 }) {
-const targetChapterNumber =
-    direction === "prev"  
-      ? currentOrderNumber - (offset)
-      : currentOrderNumber + (offset);
+  const targetChapterNumber =
+    direction === "prev"
+      ? currentOrderNumber - offset
+      : currentOrderNumber + offset;
 
   // Fetch the chapter
-  const chapter : Chapter & { novel: Novel } | null  = await prisma.chapter.findFirst({
-    where: {
-      order_number: targetChapterNumber,
-    },
-    include: {
-      novel: true
-    }
-  });
+  const chapter: (Chapter & { novel: Novel }) | null =
+    await prisma.chapter.findFirst({
+      where: {
+        order_number: targetChapterNumber,
+      },
+      include: {
+        novel: true,
+      },
+    });
 
   return chapter;
 }
@@ -158,7 +164,9 @@ export async function getNovelPublishedChapters(
       where: {
         // search
         novelId: novelId,
-        published: false,
+        publishedAt: {
+          gte: new Date(),
+        },
       },
       include: {
         novel: true,
@@ -180,7 +188,7 @@ export async function getNovelPublishedChapters(
   }
 }
 
-export async function publishChapter(chapterId: number) {
+export async function publishChapter(chapterId: number, publishDate: Date) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
@@ -205,7 +213,7 @@ export async function publishChapter(chapterId: number) {
         id: chapterId,
       },
       data: {
-        published: true,
+        publishedAt: publishDate,
       },
     });
 
@@ -247,7 +255,6 @@ export async function createChapter(novelId: number) {
         title: `Untitled Chapter ${novel?._count.chapter}`,
         novelId: novelId,
         slug: generateSlug(`chapter ${novel?._count.chapter}`),
-        published: false,
         order_number: novel?._count.chapter,
       },
     });
@@ -294,7 +301,7 @@ export async function getNovelChapterBySlug(slug: string) {
         slug: slug,
       },
       include: {
-        novel: true
+        novel: true,
       },
     });
 

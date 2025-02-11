@@ -7,25 +7,25 @@ import prisma from "../db";
 import { Prisma } from "@prisma/client";
 import { generateSlug } from "../utils";
 
-
-// 
+//
 export async function getNovelByQuery(query: string) {
   try {
-    const novels = (await prisma.novel.findMany({
-      where: {
-        title: {
-          contains: query,
-          mode: 'insensitive'
-        }
-      },
-      include: {
-        _count: {
-          select: {
-            chapter: true
-          }
-        }
-      }
-    })) ?? [];
+    const novels =
+      (await prisma.novel.findMany({
+        where: {
+          title: {
+            contains: query,
+            mode: "insensitive",
+          },
+        },
+        include: {
+          _count: {
+            select: {
+              chapter: true,
+            },
+          },
+        },
+      })) ?? [];
 
     return {
       data: novels,
@@ -34,7 +34,6 @@ export async function getNovelByQuery(query: string) {
     return { message: e.message, success: false };
   }
 }
-
 
 export async function createNovel(
   prevState: FormState,
@@ -46,15 +45,13 @@ export async function createNovel(
       return isValidUser;
     }
 
-
     const validatedFields = novelSchema.safeParse({
       title: formData.get("title"),
       synopsis: formData.get("synopsis"),
       author: formData.get("author"),
       releaseYear: formData.get("releaseYear"),
-      image: formData.get("image")
+      image: formData.get("image"),
     });
-    
 
     if (!validatedFields.success) {
       console.log(
@@ -67,8 +64,8 @@ export async function createNovel(
       };
     }
 
-    const uploadResult = await uploadImage(validatedFields.data.image)
-    console.log(uploadResult)
+    const uploadResult = await uploadImage(validatedFields.data.image);
+    console.log(uploadResult);
     const newNovel = await prisma.novel.create({
       data: {
         title: validatedFields.data.title,
@@ -76,10 +73,10 @@ export async function createNovel(
         author: validatedFields.data.author,
         releaseYear: validatedFields.data.releaseYear,
         slug: generateSlug(validatedFields.data.title),
-        image: uploadResult?.secure_url
+        image: uploadResult,
       },
     });
-    console.log("newnovel", newNovel)
+    console.log("newnovel", newNovel);
     return { message: "Novel created successfully.", success: true };
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
@@ -96,13 +93,12 @@ export async function createNovel(
   }
 }
 
-
 export async function getNovels() {
   try {
-    const isValidUser = await checkUser();
-    if (!isValidUser.success) {
-      return isValidUser;
-    }
+    // const isValidUser = await checkUser();
+    // if (!isValidUser.success) {
+    //   return isValidUser;
+    // }
 
     const novels = (await prisma.novel.findMany()) ?? [];
 
@@ -123,15 +119,15 @@ export async function getNovel(novelId: number) {
 
     const novel = await prisma.novel.findFirst({
       where: {
-        id: novelId
+        id: novelId,
       },
       include: {
         _count: {
           select: {
-            chapter: true
-          }
-        }
-      }
+            chapter: true,
+          },
+        },
+      },
     });
 
     return {
@@ -155,10 +151,10 @@ export async function getNovelBySlug(slug: string) {
       include: {
         _count: {
           select: {
-            chapter: true
-          }
-        }
-      }
+            chapter: true,
+          },
+        },
+      },
     });
 
     return {
@@ -169,15 +165,14 @@ export async function getNovelBySlug(slug: string) {
   }
 }
 
-
-
 export async function latestNovelUpdates() {
   try {
-    const novels = (await prisma.novel.findMany({
-      include: {
-        chapter: true
-      }
-    })) ?? [];
+    const novels =
+      (await prisma.novel.findMany({
+        include: {
+          chapter: true,
+        },
+      })) ?? [];
 
     return {
       data: novels,

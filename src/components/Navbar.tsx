@@ -43,9 +43,10 @@ export default function Navbar({ isSticky = true }: { isSticky?: boolean }) {
     queryKey: ["novel", query],
     queryFn: async ({ queryKey: [, q] }) => {
       if (!q) {
-        return;
+        return Promise.reject(new Error("invalid username"));
       }
       const data = await getNovelByQuery(q);
+      console.log("data", data);
       return data.data;
     },
     refetchOnMount: false,

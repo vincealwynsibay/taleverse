@@ -5,6 +5,7 @@ import { getNovels } from "@/lib/actions/novel.action";
 export default async function Page() {
   const novels = await getNovels();
 
+  console.log(novels);
   if (!novels) {
     return null;
   }

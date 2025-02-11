@@ -44,14 +44,15 @@ model Novel {
 }
 
 model Chapter {
-  id           Int      @id @default(autoincrement())
-  title        String   @unique
-  content      Json     @default("{}")
-  slug         String   @unique @default("")
-  order_number Int      @unique
-  published    Boolean  @default(false)
-  novel        Novel    @relation(fields: [novelId], references: [id])
+  id           Int       @id @default(autoincrement())
+  title        String    @unique
+  content      Json      @default("{}")
+  slug         String    @unique @default("")
+  order_number Int       @unique
+  novel        Novel     @relation(fields: [novelId], references: [id])
   novelId      Int
-  created_at   DateTime @default(now())
-  updated_at   DateTime @default(now())
+  // publishedAt will be checked to determine if the chapter is published and display the chapter publishedAt > currentDateTime
+  publishedAt  DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now())
 }

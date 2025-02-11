@@ -10,6 +10,7 @@ import { Input } from "./ui/input";
 import { Block } from "@blocknote/core";
 import { updateChapter } from "@/lib/actions/chapter.action";
 import { useRouter } from "next/navigation";
+import { isAfter } from "date-fns";
 import useDebounce from "@/hooks/useDebounce";
 
 export default function WriteChapterForm({
@@ -45,10 +46,13 @@ export default function WriteChapterForm({
 
   if (!chapter) return null;
 
+  const isPublished =
+    chapter.publishedAt && isAfter(chapter.publishedAt, new Date());
   const handleClickSave = async () => {
     setIsSaving(() => true);
 
-    if (chapter.published) {
+    // check if published
+    if (isPublished) {
       const updatedChapter = await updateChapter(chapter.id, {
         title: title,
         content: JSON.stringify(blocks),
@@ -65,7 +69,7 @@ export default function WriteChapterForm({
     setTitle(e.target.value);
     setIsChanged(() => true);
 
-    if (!chapter.published) {
+    if (!isPublished) {
       debouncedRequest();
     }
   };
@@ -74,7 +78,7 @@ export default function WriteChapterForm({
     setBlocks(() => newDocument);
     setIsChanged(() => true);
 
-    if (!chapter.published) {
+    if (!isPublished) {
       debouncedRequest();
     }
   };
@@ -85,12 +89,12 @@ export default function WriteChapterForm({
     <div className="flex flex-col gap-2">
       <div className="">
         <span>
-          {chapter.published && isChanged && "Published with unsaved changes"}
+          {isPublished && isChanged && "Published with unsaved changes"}
         </span>
-        <span>{!chapter.published && (isSaving ? "isSaving" : "Saved")}</span>
+        <span>{!isPublished && (isSaving ? "isSaving" : "Saved")}</span>
       </div>
       <div className="flex gap-2">
-        {!chapter.published && (
+        {!isPublished && (
           <>
             <PublishButton chapterId={chapter.id} isSaving={isSaving} />
             <Button asChild disabled={isSaving}>
@@ -101,7 +105,7 @@ export default function WriteChapterForm({
           </>
         )}
 
-        {chapter.published && (
+        {isPublished && (
           <Button onClick={() => handleClickSave()} disabled={isSaving}>
             Save
           </Button>
