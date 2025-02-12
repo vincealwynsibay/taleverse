@@ -22,7 +22,7 @@ export async function checkUser() {
       throw new Error("User does not exist.");
     }
 
-    return { message: "User exist", success: true };
+    return { message: "User exist", data: { id: user.id }, success: true };
   } catch (err) {
     return { message: err.message, data: undefined, success: false };
   }

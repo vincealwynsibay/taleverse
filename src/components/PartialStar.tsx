@@ -14,18 +14,13 @@ export default function PartialStar({
   Icon,
 }: PartialStarProps) {
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
+    <div className="relative inline-block">
       {React.cloneElement(Icon, {
         size,
         className: cn("fill-transparent", className),
       })}
       <div
-        style={{
-          position: "absolute",
-          top: 0,
-          overflow: "hidden",
-          width: `${fillPercentage * 100}%`,
-        }}
+        className={cn("absolute top-0 left-0", `w-[${fillPercentage * 100}%]`)}
       >
         {React.cloneElement(Icon, {
           size,

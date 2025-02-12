@@ -30,10 +30,10 @@ export default function NovelView({ novel }: { novel: Novel }) {
       </div>
       <div
         className="h-[280px] z-10 absolute lg:relative"
-        style={{
-          backgroundImage:
-            "linear-gradient(0deg, hsl(var(--background)), transparent)",
-        }}
+        // style={{
+        //   backgroundImage:
+        //     "linear-gradient(0deg, hsl(var(--background)), transparent)",
+        // }}
       ></div>
       <section className="bg-background lg:z-10 relative shadow-md">
         <MaxWidthWrapper className="mx-auto px-5">
