@@ -9,14 +9,20 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  clerkId    String   @unique
-  email      String   @unique
-  username   String
-  image      String?  @default("")
-  role       UserRole @default(USER)
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
+  id                     Int                 @id @default(autoincrement())
+  clerkId                String              @unique
+  email                  String              @unique
+  username               String
+  image                  String?             @default("")
+  role                   UserRole            @default(USER)
+  created_at             DateTime            @default(now())
+  updated_at             DateTime            @default(now())
+  stripeCustomerId       String?             @unique @map(name: "stripe_customer_id")
+  stripeSubscriptionId   String?             @unique @map(name: "stripe_subscription_id")
+  stripePriceId          String?             @map(name: "stripe_price_id")
+  stripeCurrentPeriodEnd DateTime?           @map(name: "stripe_current_period_end")
+  CreditTransaction      CreditTransaction[]
+  PurchasedChapter       PurchasedChapter[]
 }
 
 enum UserRole {
@@ -44,15 +50,53 @@ model Novel {
 }
 
 model Chapter {
-  id           Int       @id @default(autoincrement())
-  title        String    @unique
-  content      Json      @default("{}")
-  slug         String    @unique @default("")
-  order_number Int       @unique
-  novel        Novel     @relation(fields: [novelId], references: [id])
-  novelId      Int
+  id               Int                @id @default(autoincrement())
+  title            String             @unique
+  content          Json               @default("{}")
+  slug             String             @unique @default("")
+  order_number     Int                @unique
+  novel            Novel              @relation(fields: [novelId], references: [id])
+  novelId          Int
   // publishedAt will be checked to determine if the chapter is published and display the chapter publishedAt > currentDateTime
-  publishedAt  DateTime?
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @default(now())
+  publishedAt      DateTime?
+  // publicAt === publishedAt means the chapter is public, otherwise it is private
+  publicAt         DateTime?
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @default(now())
+  PurchasedChapter PurchasedChapter[]
+}
+
+model PurchasedChapter {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  chapter   Chapter  @relation(fields: [chapterId], references: [id])
+  chapterId Int
+  boughtAt  DateTime @default(now())
+
+  @@unique([userId, chapterId]) // A user can only buy a chapter once
+}
+
+model CreditTransaction {
+  id                Int             @id @default(autoincrement())
+  user              User            @relation(fields: [userId], references: [id])
+  userId            Int
+  stripe_payment_id String          @unique
+  credit            Int
+  type              TransactionType
+  created_at        DateTime        @default(now())
+}
+
+enum TransactionType {
+  BUY
+  SPEND
+}
+
+// table for credit currency user can buy 5 for 1$ or 100 for 20$
+model CreditOffers {
+  id         Int      @id @default(autoincrement())
+  credit     Int      @default(0)
+  price      Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 }
