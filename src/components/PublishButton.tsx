@@ -34,31 +34,33 @@ export default function PublishButton({
   };
 
   return (
-    <Dialog>
-      <DialogTrigger>Publish</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Set Publish Schedule</DialogTitle>
-        </DialogHeader>
-        <DateTimePicker hourCycle={12} value={date} onChange={setDate} />
+    <div className="">
+      <Button onClick={() => handlePublishChapter()} disabled={isSaving}>
+        Publish Now
+      </Button>
+      <Dialog>
+        <DialogTrigger>Schedule Publish</DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set Publish Schedule</DialogTitle>
+          </DialogHeader>
+          <DateTimePicker hourCycle={12} value={date} onChange={setDate} />
 
-        <DialogFooter className="justify-end mt-4 flex flex-row items-center gap-4">
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              Close
+          <DialogFooter className="justify-end mt-4 flex flex-row items-center gap-4">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+            <Button
+              onClick={() => handleSchedulePublishChapter()}
+              disabled={isSaving}
+            >
+              Schedule Publish
             </Button>
-          </DialogClose>
-          <Button
-            onClick={() => handleSchedulePublishChapter()}
-            disabled={isSaving}
-          >
-            Schedule Publish
-          </Button>
-          <Button onClick={() => handlePublishChapter()} disabled={isSaving}>
-            Publish Now
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }

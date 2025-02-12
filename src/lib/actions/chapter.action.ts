@@ -75,7 +75,7 @@ export async function getNovelPublishedChaptersWithPagination(
         // search
         novelId: novelId,
         publishedAt: {
-          gte: new Date(),
+          lte: new Date(),
         },
       },
       // pagination
@@ -89,7 +89,7 @@ export async function getNovelPublishedChaptersWithPagination(
       ],
     });
 
-    console.log("chap", chap_number);
+    console.log("chap", chapters);
 
     const totalCount = await prisma.chapter.count({
       where: {
@@ -109,7 +109,7 @@ export async function getNovelPublishedChaptersWithPagination(
         // search
         novelId: novelId,
         publishedAt: {
-          gte: new Date(),
+          lte: new Date(),
         },
       },
     });
@@ -165,7 +165,7 @@ export async function getNovelPublishedChapters(
         // search
         novelId: novelId,
         publishedAt: {
-          gte: new Date(),
+          lte: new Date(),
         },
       },
       include: {

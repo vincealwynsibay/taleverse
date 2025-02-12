@@ -40,6 +40,7 @@ export default function ChapterList({
   const chapterCount = useRef(0);
   const itemsPerPage = 10;
 
+  console.log("init", chapters);
   useEffect(() => {
     let ignore = false;
     const initializeChapters = async () => {
@@ -50,6 +51,7 @@ export default function ChapterList({
         1,
         sort
       );
+      console.log("initialChapteres", initialChapters);
       if (!ignore) {
         chapterCount.current = initialChapters.data?.totalCount ?? 0;
         setChapters(initialChapters.data?.chapters ?? []);
@@ -60,7 +62,7 @@ export default function ChapterList({
     return () => {
       ignore = true;
     };
-  }, [novel.id]);
+  }, [novel.id, sort]);
 
   const handlePageChange = async (newPage: number) => {
     setCurrentPage(() => newPage);
