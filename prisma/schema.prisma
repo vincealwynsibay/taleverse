@@ -59,7 +59,7 @@ model Chapter {
   novelId          Int
   // publishedAt will be checked to determine if the chapter is published and display the chapter publishedAt > currentDateTime
   publishedAt      DateTime?
-  // publicAt === publishedAt means the chapter is public, otherwise it is private
+  //   publishedAt >= publicAt means the chapter is public, otherwise it is private
   publicAt         DateTime?
   created_at       DateTime           @default(now())
   updated_at       DateTime           @default(now())

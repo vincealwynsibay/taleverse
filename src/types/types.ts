@@ -20,3 +20,15 @@ export type StripeMetadata = {
   userId: string;
   priceId: string;
 };
+
+// type for Chapter but no content, only the essential parts for chapter list
+export type ChapterMetadata = {
+  id: number;
+  title: string;
+  slug: string;
+  order_number: number;
+  publishedAt: Date | null;
+  publicAt: Date | null;
+  isSubscribed?: boolean | undefined;
+  isBought?: boolean | undefined;
+};

@@ -1,13 +1,15 @@
 "use client";
 
-import { Chapter, Novel } from "@prisma/client";
+import { Novel } from "@prisma/client";
 import MaxWidthWrapper from "./MaxWidthWrapper";
 import {
   ArrowDownUp,
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Lock,
   Search,
+  Unlock,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -21,10 +23,14 @@ import { getNovelPublishedChaptersWithPagination } from "@/lib/actions/chapter.a
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "./ui/button";
 import { Input } from "./ui/input";
+import { isBefore } from "date-fns";
+import { isAuthorized } from "@/lib/actions/stripe.action";
+import { ChapterMetadata } from "@/types/types";
 
 export default function ChapterList({
   slug,
   novel,
+  clerkId,
 }: {
   slug: string;
   novel: Novel & {
@@ -32,8 +38,9 @@ export default function ChapterList({
       chapter: number;
     };
   };
+  clerkId: string | null;
 }) {
-  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [chapters, setChapters] = useState<ChapterMetadata[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"asc" | "desc">("asc");
@@ -132,6 +139,12 @@ export default function ChapterList({
       </div>
       {chapters.length > 0 &&
         chapters.map((chapter) => {
+          const authorized = clerkId
+            ? isAuthorized(clerkId, chapter.slug)
+            : false;
+
+          console.log("authorized", authorized);
+
           return (
             <Link key={chapter.id} href={`/novels/${slug}/${chapter.slug}`}>
               <div className="flex gap-8 items-center">
@@ -143,6 +156,21 @@ export default function ChapterList({
                   <span className="flex gap-2 items-center text-gray-400">
                     <Calendar className="w-4 h-4" /> June 1, 2024
                   </span>
+                </div>
+                <div className="self-end">
+                  {!authorized &&
+                    chapter.publicAt &&
+                    isBefore(new Date(), chapter.publicAt) && (
+                      <span className="text-sm text-gray-400">
+                        <Lock />
+                      </span>
+                    )}
+
+                  {(chapter.isBought || chapter.isSubscribed) && (
+                    <span className="text-sm text-gray-400">
+                      <Unlock />
+                    </span>
+                  )}
                 </div>
               </div>
             </Link>
