@@ -42,7 +42,7 @@ export async function createNovel(
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
-      return isValidUser;
+      return isValidUser.message;
     }
 
     const validatedFields = novelSchema.safeParse({
@@ -114,7 +114,7 @@ export async function getNovel(novelId: number) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
-      return isValidUser;
+      return isValidUser.message;
     }
 
     const novel = await prisma.novel.findFirst({
@@ -139,11 +139,6 @@ export async function getNovel(novelId: number) {
 }
 export async function getNovelBySlug(slug: string) {
   try {
-    const isValidUser = await checkUser();
-    if (!isValidUser.success) {
-      return isValidUser;
-    }
-
     const novel = await prisma.novel.findFirst({
       where: {
         slug: slug,
