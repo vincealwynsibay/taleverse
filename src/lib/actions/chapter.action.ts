@@ -4,6 +4,8 @@ import { Chapter, Novel, Prisma } from "@prisma/client";
 import prisma from "../db";
 import { checkUser } from "./common";
 import { generateSlug } from "../utils";
+import { auth } from "@clerk/nextjs/server";
+import { isBefore } from "date-fns";
 
 export async function getChapterByOrderNumber(
   novelId: number,
@@ -43,19 +45,21 @@ export async function getNovelPublishedChaptersWithPagination(
   sort: "asc" | "desc" = "asc"
 ) {
   try {
-    const isValidUser = await checkUser();
-    if (!isValidUser.success) {
-      return isValidUser;
+    const { userId } = await auth();
+    let user = null;
+    if (userId) {
+      user = await prisma.user.findUnique({ where: { clerkId: userId } });
     }
 
     const limit = per_page;
     const offset = (page - 1) * limit;
-    console.log(limit, offset, page, chap_number, sort);
 
     // const [column, order] = (sort.split(".") as [
     //   keyof Chapter,
     //   "asc" | "desc" | undefined
     // ]) ?? ["order_number", "desc"]
+
+    // check if user is authorized to view chapter
 
     const chapters = await prisma.chapter.findMany({
       where: {
@@ -72,11 +76,19 @@ export async function getNovelPublishedChaptersWithPagination(
             },
           ],
         }),
-        // search
-        novelId: novelId,
         publishedAt: {
           lte: new Date(),
         },
+        // search
+        novelId: novelId,
+      },
+      select: {
+        id: true,
+        title: true,
+        order_number: true,
+        slug: true,
+        publishedAt: true,
+        publicAt: true,
       },
       // pagination
       skip: offset,
@@ -89,7 +101,39 @@ export async function getNovelPublishedChaptersWithPagination(
       ],
     });
 
-    console.log("chap", chapters);
+    const existingPurchases =
+      user &&
+      (await prisma.purchasedChapter.findMany({
+        where: {
+          userId: user.id,
+        },
+      }));
+
+    const isSubscribed =
+      user &&
+      user.stripeSubscriptionId &&
+      user.stripeCurrentPeriodEnd! > new Date();
+    // if not authorize, change title to Spoiler
+    const parsedChapters = chapters.map((chapter) => {
+      if (!chapter.publicAt) return chapter;
+
+      if (chapter.publicAt && isBefore(chapter.publicAt, new Date())) {
+        return { ...chapter };
+      }
+
+      if (isSubscribed) {
+        return { ...chapter, isSubscribed: true };
+      }
+
+      if (existingPurchases?.some((p) => p.chapterId === chapter.id)) {
+        return { ...chapter, isBought: true };
+      }
+
+      return {
+        ...chapter,
+        title: "Spoiler",
+      };
+    });
 
     const totalCount = await prisma.chapter.count({
       where: {
@@ -116,7 +160,7 @@ export async function getNovelPublishedChaptersWithPagination(
 
     return {
       data: {
-        chapters,
+        chapters: parsedChapters,
         totalCount,
       },
       success: true,
@@ -192,7 +236,7 @@ export async function publishChapter(chapterId: number, publishDate: Date) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
-      return isValidUser;
+      return isValidUser.message;
     }
 
     const chapter = await prisma.chapter.findFirst({
@@ -226,11 +270,52 @@ export async function publishChapter(chapterId: number, publishDate: Date) {
   }
 }
 
+export async function schedulePublicRelease(
+  chapterId: number,
+  publicReleaseDate: Date
+) {
+  try {
+    const isValidUser = await checkUser();
+    if (!isValidUser.success) {
+      return isValidUser.message;
+    }
+
+    const chapter = await prisma.chapter.findFirst({
+      where: {
+        id: chapterId,
+      },
+      include: {
+        novel: true,
+      },
+    });
+
+    if (!chapter) {
+      throw new Error("Chapter not found.");
+    }
+
+    const updatedChapter = await prisma.chapter.update({
+      where: {
+        id: chapterId,
+      },
+      data: {
+        publicAt: publicReleaseDate,
+      },
+    });
+
+    return {
+      data: updatedChapter,
+      success: true,
+    };
+  } catch (e) {
+    return { message: e.message, success: false };
+  }
+}
+
 export async function createChapter(novelId: number) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
-      return isValidUser;
+      return isValidUser.message;
     }
 
     const novel = await prisma.novel.findFirst({
@@ -273,7 +358,7 @@ export async function getNovelChapter(chapterId: number) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
-      return isValidUser;
+      return isValidUser.message;
     }
 
     const chapter = await prisma.chapter.findFirst({
@@ -321,7 +406,7 @@ export async function updateChapterContent(
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
-      return isValidUser;
+      return isValidUser.message;
     }
 
     const chapter = await prisma.chapter.findFirst({
@@ -362,7 +447,7 @@ export async function updateChapter(
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
-      return isValidUser;
+      return isValidUser.message;
     }
 
     const chapter = await prisma.chapter.findFirst({
@@ -399,7 +484,7 @@ export async function updateChapterTitle(chapterId: number, newTitle: string) {
   try {
     const isValidUser = await checkUser();
     if (!isValidUser.success) {
-      return isValidUser;
+      return isValidUser.message;
     }
 
     const chapter = await prisma.chapter.findFirst({
