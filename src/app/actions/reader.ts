@@ -7,6 +7,7 @@ import { requireViewer } from "@/lib/auth";
 import { unlockChapter } from "@/lib/credits";
 import { fail, ok, run } from "@/lib/action";
 import { clamp } from "@/lib/utils";
+import { refreshRating } from "@/lib/ratings";
 
 const id = z.number().int().positive();
 
@@ -71,8 +72,7 @@ export async function saveReviewAction(input: z.input<typeof reviewInput>) {
         update: { rating, body },
         create: { userId: viewer.id, novelId, rating, body },
       });
-      const agg = await tx.review.aggregate({ where: { novelId }, _avg: { rating: true }, _count: true });
-      await tx.novel.update({ where: { id: novelId }, data: { ratingAvg: agg._avg.rating ?? 0, ratingCount: agg._count } });
+      await refreshRating(tx, novelId);
     });
     revalidatePath(`/novels/${novel.slug}`);
     return ok(undefined);
@@ -86,8 +86,7 @@ export async function deleteReviewAction(novelId: number) {
     if (!novel) return fail("Novel not found.");
     await db.$transaction(async (tx) => {
       await tx.review.deleteMany({ where: { userId: viewer.id, novelId } });
-      const agg = await tx.review.aggregate({ where: { novelId }, _avg: { rating: true }, _count: true });
-      await tx.novel.update({ where: { id: novelId }, data: { ratingAvg: agg._avg.rating ?? 0, ratingCount: agg._count } });
+      await refreshRating(tx, novelId);
     });
     revalidatePath(`/novels/${novel.slug}`);
     return ok(undefined);

@@ -60,12 +60,34 @@ async function syncUser(clerkId: string) {
   }
 }
 
+/**
+ * Local development without Clerk keys: DEV_AS=reader|admin signs every
+ * request in as a local dev account. Ignored when Clerk is configured and
+ * always ignored in production.
+ */
+async function devViewer() {
+  const as = process.env.DEV_AS;
+  if (authEnabled || process.env.NODE_ENV === "production" || (as !== "reader" && as !== "admin")) return null;
+  const clerkId = `dev:${as}`;
+  const existing = await db.user.findUnique({ where: { clerkId } });
+  if (existing) return existing;
+  const user = await db.user.create({
+    data: { clerkId, email: `dev-${as}@taleverse.local`, username: `dev_${as}`, role: as === "admin" ? "ADMIN" : "USER" },
+  });
+  await grantCredits(db, { userId: user.id, amount: 25, kind: "GRANT", key: `dev:${user.id}`, description: "Dev credits" });
+  return user;
+}
+
 /** The signed-in reader, or null. Cached per request. */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
-  if (!authEnabled) return null;
-  const { userId } = await auth();
-  if (!userId) return null;
-  const user = (await db.user.findUnique({ where: { clerkId: userId } })) ?? (await syncUser(userId));
+  let user;
+  if (!authEnabled) {
+    user = await devViewer();
+  } else {
+    const { userId } = await auth();
+    if (!userId) return null;
+    user = (await db.user.findUnique({ where: { clerkId: userId } })) ?? (await syncUser(userId));
+  }
   if (!user) return null;
   return {
     id: user.id,

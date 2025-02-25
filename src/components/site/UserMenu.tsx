@@ -15,13 +15,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { authEnabled } from "@/lib/flags";
 import { DemoButtons } from "./DemoButtons";
 import { SearchBox } from "./SearchBox";
 
 type HeaderViewer = { username: string; imageUrl: string | null; isAdmin: boolean; isDemo: boolean } | null;
 
-export function UserMenu({ viewer }: { viewer: NonNullable<HeaderViewer> }) {
+function SignOutItem() {
   const { signOut } = useClerk();
+  return (
+    <DropdownMenuItem onSelect={() => signOut({ redirectUrl: "/" })}>
+      <LogOut /> Sign out
+    </DropdownMenuItem>
+  );
+}
+
+export function UserMenu({ viewer }: { viewer: NonNullable<HeaderViewer> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -57,10 +66,12 @@ export function UserMenu({ viewer }: { viewer: NonNullable<HeaderViewer> }) {
             </Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => signOut({ redirectUrl: "/" })}>
-          <LogOut /> Sign out
-        </DropdownMenuItem>
+        {authEnabled && (
+          <>
+            <DropdownMenuSeparator />
+            <SignOutItem />
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

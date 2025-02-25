@@ -172,3 +172,20 @@
     font-size: 0.9em;
   }
 }
+
+/* BlockNote editor: blend into the card and write in the reading face. */
+.bn-container.bn-container[data-color-scheme] {
+  --bn-colors-editor-background: transparent;
+  --bn-colors-editor-text: var(--foreground);
+  --bn-font-family: var(--font-literata), ui-serif, Georgia, serif;
+  --bn-border-radius: var(--radius);
+}
+.bn-container.bn-container .bn-editor {
+  padding-inline: 2.25rem 0;
+  font-size: 1.1rem;
+  line-height: 1.75;
+}
+.bn-container.bn-container .bn-default-styles,
+.bn-container.bn-container .bn-editor {
+  font-family: var(--font-literata), ui-serif, Georgia, serif;
+}

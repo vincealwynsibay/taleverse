@@ -51,7 +51,8 @@ export default async function ReaderPage({ params }: PageProps<"/novels/[slug]/[
 
   // Count a read without delaying the response.
   if (!viewer?.isAdmin) {
-    after(() => db.novel.update({ where: { id: chapter.novelId }, data: { views: { increment: 1 } } }));
+    // Raw SQL so a view doesn't touch updatedAt (which drives "Recently updated").
+    after(() => db.$executeRaw`UPDATE "Novel" SET views = views + 1 WHERE id = ${chapter.novelId}`);
   }
 
   return (

@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Db } from "../db";
 import { countWords } from "../blocks";
 import { slugify } from "../utils";
+import { refreshRating } from "../ratings";
 import { catalog } from "./catalog";
 import { markupToBlocks } from "./markup";
 import { buildSchedule } from "./schedule";
@@ -23,13 +24,6 @@ async function loadSeedFile(slug: string): Promise<SeedFile> {
   return JSON.parse(await readFile(file, "utf8"));
 }
 
-async function recomputeRating(db: Db, novelId: number) {
-  const agg = await db.review.aggregate({ where: { novelId }, _avg: { rating: true }, _count: true });
-  await db.novel.update({
-    where: { id: novelId },
-    data: { ratingAvg: agg._avg.rating ?? 0, ratingCount: agg._count },
-  });
-}
 
 /**
  * Upserts the seed catalog: genres, novels, chapters and their release
@@ -112,7 +106,7 @@ export async function seedCommunity(db: Db) {
       const chapter = await db.chapter.findUnique({ where: { novelId_number: { novelId: novel.id, number: c.chapter } } });
       if (chapter) await db.comment.create({ data: { userId: users.get(c.by)!, chapterId: chapter.id, body: c.body } });
     }
-    await recomputeRating(db, novel.id);
+    await refreshRating(db, novel.id);
   }
 }
 
@@ -136,7 +130,7 @@ export async function resetDemo(db: Db, { now = new Date(), log = console.log } 
     await prepareDemoUser(db, user.id, now);
   }
   // Ratings may have changed after removing demo reviews.
-  for (const n of await db.novel.findMany({ select: { id: true } })) await recomputeRating(db, n.id);
+  for (const n of await db.novel.findMany({ select: { id: true } })) await refreshRating(db, n.id);
   log(`  reset ${demoUsers.length} demo account(s)`);
 }
 
