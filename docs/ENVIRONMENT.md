@@ -18,4 +18,5 @@ Put these in `.env.local` (git-ignored). Next.js loads it for the app, and `pris
 | `CRON_SECRET` | `/api/cron/demo-reset` | Vercel Cron sends it as a bearer token. |
 | `DEMO_ENABLED` | Demo buttons | Set to `false` to turn off the one-click demo accounts. |
 | `ALLOW_FAKE_PAYMENTS` | Production without Stripe | `true` lets a production build use the simulated provider. Only for private previews. |
-| `DEV_AS` | Local development without Clerk | `reader` or `admin` signs every request in as a local dev account. Ignored when Clerk is configured and always in production. |
+| `DEV_AS` | Local development without Clerk | `reader` or `admin` signs every request in as a local dev account. A `tv_dev_as` cookie (`reader`, `admin` or `guest`) switches persona per browser; the E2E tests use it. Ignored when Clerk is configured and always in production. |
+| `E2E_DATABASE_URL` | `pnpm test:e2e` | Defaults to `taleverse_e2e` on the Docker server; created automatically. |

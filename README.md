@@ -71,6 +71,7 @@ All variables are documented in [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
 | Command | What it does |
 |---|---|
 | `pnpm test` | Unit tests plus Postgres integration tests (ledger concurrency, demo reset) |
+| `pnpm test:e2e` | Playwright: guest paywall, reader unlock / purchase / library / review / comment, admin scheduling, against its own database |
 | `pnpm lint` / `pnpm typecheck` | ESLint and TypeScript |
 | `pnpm demo:reset` | Restore the catalogue and demo accounts |
 | `pnpm import:gutenberg` | Re-download and re-split the seed novels |

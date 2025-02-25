@@ -3,10 +3,13 @@ import { cache } from "react";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "./db";
+import { cookies } from "next/headers";
 import { grantCredits } from "./credits";
 import { authEnabled } from "./flags";
+import { prepareDemoUser } from "./seed";
 
 export const WELCOME_CREDITS = 10;
+export const DEV_AS_COOKIE = "tv_dev_as";
 
 export type Viewer = {
   id: number;
@@ -66,16 +69,26 @@ async function syncUser(clerkId: string) {
  * always ignored in production.
  */
 async function devViewer() {
-  const as = process.env.DEV_AS;
-  if (authEnabled || process.env.NODE_ENV === "production" || (as !== "reader" && as !== "admin")) return null;
+  const envAs = process.env.DEV_AS;
+  if (authEnabled || process.env.NODE_ENV === "production" || (envAs !== "reader" && envAs !== "admin")) return null;
+  // With dev login on, a `tv_dev_as` cookie (reader | admin | guest) switches persona per browser (used by the E2E tests).
+  const cookieAs = (await cookies()).get(DEV_AS_COOKIE)?.value;
+  const as = cookieAs === "reader" || cookieAs === "admin" || cookieAs === "guest" ? cookieAs : envAs;
+  if (as === "guest") return null;
   const clerkId = `dev:${as}`;
   const existing = await db.user.findUnique({ where: { clerkId } });
   if (existing) return existing;
-  const user = await db.user.create({
-    data: { clerkId, email: `dev-${as}@taleverse.local`, username: `dev_${as}`, role: as === "admin" ? "ADMIN" : "USER" },
-  });
-  await grantCredits(db, { userId: user.id, amount: 25, kind: "GRANT", key: `dev:${user.id}`, description: "Dev credits" });
-  return user;
+  try {
+    // isDemo so `pnpm demo:reset` restores dev accounts too.
+    const user = await db.user.create({
+      data: { clerkId, email: `dev-${as}@taleverse.local`, username: `dev_${as}`, role: as === "admin" ? "ADMIN" : "USER", isDemo: true },
+    });
+    await prepareDemoUser(db, user.id);
+    return user;
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return db.user.findUnique({ where: { clerkId } });
+    throw e;
+  }
 }
 
 /** The signed-in reader, or null. Cached per request. */

@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "db:up": "docker compose up -d db",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.7",
+    "@playwright/test": "1.65.1",
     "@tailwindcss/postcss": "4.3.5",
     "@types/node": "24.19.2",
     "@types/pg": "8.23.1",

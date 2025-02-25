@@ -51,3 +51,7 @@ next-env.d.ts
 
 # local image uploads (dev fallback when Cloudinary is not configured)
 /public/uploads
+
+# playwright
+/test-results
+/playwright-report
