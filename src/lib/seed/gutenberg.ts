@@ -21,17 +21,25 @@ export type SplitChapter = { title: string; paragraphs: string[] };
 const SMALL_WORDS = new Set(["a", "an", "and", "at", "but", "by", "for", "in", "of", "on", "or", "the", "to", "with"]);
 
 export function titleCase(input: string): string {
-  const s = input.replace(/--_?continued_?/i, " (continued)").replace(/_/g, "").replace(/--/g, " — ").trim();
+  const continued = /[-—]+\s*_?continued_?\.?$/i.test(input.trim());
+  const s = input
+    .trim()
+    .replace(/[-—]+\s*_?continued_?\.?$/i, "")
+    .replace(/_/g, "")
+    .replace(/--/g, " — ")
+    .trim()
+    .replace(/\.$/, "");
+  const suffix = continued ? " (continued)" : "";
   const letters = s.replace(/[^A-Za-z]/g, "");
   const upper = letters.replace(/[^A-Z]/g, "").length;
-  if (!letters || upper / letters.length < 0.7) return s.replace(/\.$/, ""); // already mixed case
-  return s
+  if (!letters || upper / letters.length < 0.7) return s + suffix; // already mixed case
+  const cased = s
     .toLowerCase()
     .split(/(\s+)/)
     .map((w, i) => (i > 0 && SMALL_WORDS.has(w) ? w : w.replace(/^(\W*)(\w)/, (_, p, c) => p + c.toUpperCase())))
     .join("")
-    .replace("(Continued)", "(continued)")
     .trim();
+  return cased + suffix;
 }
 
 /** "Chapter 12" carries no information beyond the number; treat it as untitled. */

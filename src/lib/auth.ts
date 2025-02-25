@@ -4,6 +4,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "./db";
 import { grantCredits } from "./credits";
+import { authEnabled } from "./flags";
 
 export const WELCOME_CREDITS = 10;
 
@@ -61,6 +62,7 @@ async function syncUser(clerkId: string) {
 
 /** The signed-in reader, or null. Cached per request. */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
+  if (!authEnabled) return null;
   const { userId } = await auth();
   if (!userId) return null;
   const user = (await db.user.findUnique({ where: { clerkId: userId } })) ?? (await syncUser(userId));

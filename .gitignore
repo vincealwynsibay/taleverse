@@ -48,3 +48,6 @@ next-env.d.ts
 
 # seed download cache
 /scripts/.cache
+
+# local image uploads (dev fallback when Cloudinary is not configured)
+/public/uploads
