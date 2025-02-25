@@ -263,7 +263,9 @@ export function ReaderShell({ novel, chapter, prev, next, toc, initialSettings, 
         </div>
       )}
 
-      <div className={cn("pt-14", settings.font === "serif" ? "font-serif" : "font-sans")}>{children}</div>
+      <main id="main" className={cn("pt-14", settings.font === "serif" ? "font-serif" : "font-sans")}>
+        {children}
+      </main>
 
       <nav className="mx-auto flex max-w-[var(--reader-width)] gap-3 px-5 pb-6" aria-label="Chapter navigation">
         {prev ? (

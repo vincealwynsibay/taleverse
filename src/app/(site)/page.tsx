@@ -79,7 +79,9 @@ export default async function HomePage() {
           </div>
 
           {lead && (
-            <Link href={`/novels/${lead.slug}`} className="group relative mx-auto block h-[360px] w-full max-w-[380px] sm:h-[420px]" aria-label={`Read ${lead.title}`}>
+            <Link href={`/novels/${lead.slug}`} className="group relative mx-auto block h-[360px] w-full max-w-[380px] sm:h-[420px]">
+              {/* Decorative stack; the link's name comes from the caption below. */}
+              <div aria-hidden className="contents">
               {rest.slice(0, 2).map((n, i) => (
                 <NovelCover
                   key={n.id}
@@ -103,6 +105,7 @@ export default async function HomePage() {
                 priority
                 className="absolute top-0 left-1/2 w-[58%] -translate-x-1/2 transition-transform duration-500 group-hover:-translate-y-2"
               />
+              </div>
               <div className="absolute inset-x-0 bottom-0 text-center">
                 <p className="text-xs tracking-[0.2em] text-muted-foreground uppercase">Most read this week</p>
                 <p className="font-display text-lg font-semibold group-hover:text-primary">{lead.title}</p>
