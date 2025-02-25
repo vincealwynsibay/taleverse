@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/Section";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Your library" };
 
 export default async function LibraryPage() {

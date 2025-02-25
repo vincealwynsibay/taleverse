@@ -25,3 +25,10 @@ Grilled with Vince on 2026-11-14. Where he stopped the grill and said "just do t
 - **Editor image uploads** go to Cloudinary, replacing tmpfiles.org, which deletes files after an hour.
 - **Demo reset** restores seeded novels by slug and chapter number, deletes non-seed content and wipes demo users' activity. Real users' data on seed chapters is kept.
 - **Commits** are on branch `showpiece`, authored as Vince, with no AI attribution trailers, matching this repo's history. Nothing is pushed.
+
+## Added while building
+- **Read-only mode without Clerk keys.** Clerk Core 3 no longer runs keyless, and its CLI writes keys to a local env file, which this machine's secrets guard keeps off-limits to agents. So the app runs without keys: browsing and free chapters work, while auth-only UI is disabled with a setup hint. CI builds this way too.
+- **`DEV_AS=reader|admin`** signs in a local dev account when Clerk isn't configured (never in production). It was used to click through every signed-in flow overnight.
+- **Raw SQL for view counts and rating refreshes**, so they don't bump `Novel.updatedAt`, which drives "Recently updated".
+- **Integration tests use `prisma migrate deploy`**, not `migrate reset`: Prisma refuses destructive commands from AI agents. Each test truncates its own tables.
+- **Per-viewer routes are `force-dynamic`** so a keyless build can't prerender a redirect for `/library`, `/credits` or `/admin`.

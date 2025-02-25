@@ -122,7 +122,7 @@ export default async function HomePage() {
                 href={`/novels/${r.novel.slug}/${r.chapter.number}`}
                 className="group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/40"
               >
-                <NovelCover title={r.novel.title} coverUrl={r.novel.coverUrl} hue={r.novel.coverHue} size="sm" className="w-14" />
+                <NovelCover title={r.novel.title} coverUrl={r.novel.coverUrl} hue={r.novel.coverHue} size="xs" className="w-14" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display font-semibold group-hover:text-primary">{r.novel.title}</p>
                   <p className="truncate text-sm text-muted-foreground">{chapterLabel(r.chapter.number, r.chapter.title)}</p>

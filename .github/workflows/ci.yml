@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: taleverse
+          POSTGRES_PASSWORD: taleverse
+          POSTGRES_DB: taleverse_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U taleverse"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://taleverse:taleverse@localhost:5432/taleverse_test
+      TEST_DATABASE_URL: postgresql://taleverse:taleverse@localhost:5432/taleverse_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm next typegen
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint
+      - name: Test (unit + Postgres integration)
+        run: pnpm test
+      - name: Build (read-only mode, no third-party keys)
+        run: pnpm build

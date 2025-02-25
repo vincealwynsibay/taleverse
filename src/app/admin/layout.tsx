@@ -8,6 +8,9 @@ import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
+// Per-viewer pages: never prerender or cache.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: { default: "Admin", template: "%s · Admin · Taleverse" }, robots: { index: false } };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

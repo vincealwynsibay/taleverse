@@ -11,6 +11,7 @@ import { cn, formatUsd } from "@/lib/utils";
 import { BuyPackButton } from "@/components/credits/BuyPackButton";
 import { Button } from "@/components/ui/button";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Credits" };
 
 export default async function CreditsPage({ searchParams }: PageProps<"/credits">) {
