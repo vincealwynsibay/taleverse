@@ -1,8 +1,17 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@/generated/prisma/client";
+import { env } from "./env";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+function createClient(url = env.databaseUrl) {
+  return new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
+}
 
-const prisma = globalForPrisma.prisma || new PrismaClient({});
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export default prisma;
+export const db = globalForPrisma.prisma ?? createClient();
+if (!env.isProduction) globalForPrisma.prisma = db;
+
+export { createClient };
+export type Db = PrismaClient;
+/** Either the client or an interactive-transaction client. */
+export type Tx = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];

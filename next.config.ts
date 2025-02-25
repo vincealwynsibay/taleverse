@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  experimental: { serverExternalPackages: ["yjs"] },
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
+  },
+  serverExternalPackages: ["@prisma/client", "pg"],
 };
 
 export default nextConfig;

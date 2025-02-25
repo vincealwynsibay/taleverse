@@ -1,28 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
-
-model User {
-  id                     Int                 @id @default(autoincrement())
-  clerkId                String              @unique
-  email                  String              @unique
-  username               String
-  image                  String?             @default("")
-  role                   UserRole            @default(USER)
-  created_at             DateTime            @default(now())
-  updated_at             DateTime            @default(now())
-  stripeCustomerId       String?             @unique @map(name: "stripe_customer_id")
-  stripeSubscriptionId   String?             @unique @map(name: "stripe_subscription_id")
-  stripePriceId          String?             @map(name: "stripe_price_id")
-  stripeCurrentPeriodEnd DateTime?           @map(name: "stripe_current_period_end")
-  CreditTransaction      CreditTransaction[]
-  PurchasedChapter       PurchasedChapter[]
+  provider = "postgresql"
 }
 
 enum UserRole {
@@ -30,73 +12,188 @@ enum UserRole {
   USER
 }
 
-// path: /{novel-name}
-// 
+enum NovelStatus {
+  ONGOING
+  COMPLETED
+  HIATUS
+}
+
+enum LedgerKind {
+  PURCHASE // bought a credit pack
+  GRANT // free credits (signup bonus, demo)
+  SPEND // unlocked a chapter
+  REFUND
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  clerkId          String   @unique
+  email            String   @unique
+  username         String
+  imageUrl         String?
+  role             UserRole @default(USER)
+  isDemo           Boolean  @default(false)
+  stripeCustomerId String?  @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  ledger   CreditLedgerEntry[]
+  unlocks  ChapterUnlock[]
+  library  LibraryEntry[]
+  progress ReadingProgress[]
+  reviews  Review[]
+  comments Comment[]
+}
+
+model Genre {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  slug   String  @unique
+  novels Novel[]
+}
 
 model Novel {
-  id          Int       @id @default(autoincrement())
-  title       String    @unique @default("")
-  synopsis    String    @default("")
-  author      String    @default("")
-  slug        String    @unique @default("")
-  releaseYear String    @default("")
-  totalViews  Int       @default(0)
-  image       String    @default("")
-  // genre
-  // categories
-  chapter     Chapter[]
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @default(now())
+  id          Int         @id @default(autoincrement())
+  title       String      @unique
+  slug        String      @unique
+  author      String
+  synopsis    String
+  releaseYear Int?
+  coverUrl    String?
+  // Hue (0-360) for the generated typographic cover when there's no coverUrl.
+  coverHue    Int         @default(200)
+  status      NovelStatus @default(ONGOING)
+  isSeed      Boolean     @default(false)
+  views       Int         @default(0)
+  // Denormalized from Review, updated in the same transaction as each review write.
+  ratingAvg   Float       @default(0)
+  ratingCount Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  genres   Genre[]
+  chapters Chapter[]
+  library  LibraryEntry[]
+  progress ReadingProgress[]
+  reviews  Review[]
 }
 
 model Chapter {
-  id               Int                @id @default(autoincrement())
-  title            String             @unique
-  content          Json               @default("{}")
-  slug             String             @unique @default("")
-  order_number     Int                @unique
-  novel            Novel              @relation(fields: [novelId], references: [id])
-  novelId          Int
-  // publishedAt will be checked to determine if the chapter is published and display the chapter publishedAt > currentDateTime
-  publishedAt      DateTime?
-  //   publishedAt >= publicAt means the chapter is public, otherwise it is private
-  publicAt         DateTime?
-  created_at       DateTime           @default(now())
-  updated_at       DateTime           @default(now())
-  PurchasedChapter PurchasedChapter[]
+  id          Int       @id @default(autoincrement())
+  novelId     Int
+  number      Int
+  title       String
+  // BlockNote document (array of blocks).
+  content     Json      @default("[]")
+  wordCount   Int       @default(0)
+  // null = draft. Visible to readers once publishedAt <= now.
+  publishedAt DateTime?
+  // null = free as soon as it's published. Otherwise early access until freeAt.
+  freeAt      DateTime?
+  unlockPrice Int       @default(5)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  novel    Novel             @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  unlocks  ChapterUnlock[]
+  comments Comment[]
+  progress ReadingProgress[]
+
+  @@unique([novelId, number])
+  @@index([publishedAt])
 }
 
-model PurchasedChapter {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
+// Append-only. A user's balance is SUM(delta).
+model CreditLedgerEntry {
+  id             Int        @id @default(autoincrement())
+  userId         Int
+  delta          Int
+  kind           LedgerKind
+  // Makes every write retry-safe: "stripe:<checkout session id>", "unlock:<user>:<chapter>", ...
+  idempotencyKey String     @unique
+  description    String
+  createdAt      DateTime   @default(now())
+
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  unlock ChapterUnlock?
+
+  @@index([userId, createdAt])
+}
+
+model ChapterUnlock {
+  userId        Int
+  chapterId     Int
+  ledgerEntryId Int      @unique
+  createdAt     DateTime @default(now())
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter     Chapter           @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  ledgerEntry CreditLedgerEntry @relation(fields: [ledgerEntryId], references: [id], onDelete: Cascade)
+
+  @@id([userId, chapterId])
+}
+
+model CreditPack {
+  id         Int     @id @default(autoincrement())
+  name       String
+  credits    Int
+  priceCents Int
+  highlight  Boolean @default(false)
+  active     Boolean @default(true)
+}
+
+model LibraryEntry {
   userId    Int
-  chapter   Chapter  @relation(fields: [chapterId], references: [id])
+  novelId   Int
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  novel Novel @relation(fields: [novelId], references: [id], onDelete: Cascade)
+
+  @@id([userId, novelId])
+}
+
+model ReadingProgress {
+  userId    Int
+  novelId   Int
   chapterId Int
-  boughtAt  DateTime @default(now())
+  // 0..1 scroll position within the chapter.
+  position  Float    @default(0)
+  updatedAt DateTime @updatedAt
 
-  @@unique([userId, chapterId]) // A user can only buy a chapter once
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  novel   Novel   @relation(fields: [novelId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@id([userId, novelId])
+  @@index([userId, updatedAt])
 }
 
-model CreditTransaction {
-  id                Int             @id @default(autoincrement())
-  user              User            @relation(fields: [userId], references: [id])
-  userId            Int
-  stripe_payment_id String          @unique
-  credit            Int
-  type              TransactionType
-  created_at        DateTime        @default(now())
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  novelId   Int
+  rating    Int
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  novel Novel @relation(fields: [novelId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, novelId])
+  @@index([novelId, createdAt])
 }
 
-enum TransactionType {
-  BUY
-  SPEND
-}
+model Comment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  chapterId Int
+  body      String
+  createdAt DateTime @default(now())
 
-// table for credit currency user can buy 5 for 1$ or 100 for 20$
-model CreditOffers {
-  id         Int      @id @default(autoincrement())
-  credit     Int      @default(0)
-  price      Int      @default(0)
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@index([chapterId, createdAt])
 }

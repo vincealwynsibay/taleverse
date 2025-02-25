@@ -1,27 +1,19 @@
-import prisma from "../src/lib/db"
-import { generateSlug } from "../src/lib/utils"
+import { createClient } from "../src/lib/db";
+import { seedCatalog, seedCommunity } from "../src/lib/seed";
+
+const db = createClient();
 
 async function main() {
-    const novels = await prisma.novel.findMany()
-
-    novels.forEach(async (novel) => {
-
-        await prisma.novel.update({
-            where: {
-                id: novel.id,
-            },
-            data: {
-                slug: generateSlug(novel.title)
-            }
-        })
-    })
+  console.log("Seeding catalog…");
+  await seedCatalog(db);
+  console.log("Seeding community…");
+  await seedCommunity(db);
+  console.log("Done.");
 }
+
 main()
-  .then(async () => {
-    await prisma.$disconnect()
+  .catch((e) => {
+    console.error(e);
+    process.exitCode = 1;
   })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+  .finally(() => db.$disconnect());
