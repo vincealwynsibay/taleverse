@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   // The nightly demo reset reads the seed catalogue from disk.
   outputFileTracingIncludes: {
     "/api/cron/demo-reset": ["./prisma/seed-data/**"],
+    "/**/opengraph-image*": ["./src/assets/fonts/**"],
   },
 };
 
