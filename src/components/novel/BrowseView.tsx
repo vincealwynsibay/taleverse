@@ -41,7 +41,7 @@ export async function BrowseView({ params, basePath, title, intro }: { params: P
       <div className="grid gap-10 lg:grid-cols-[220px_1fr]">
         <aside className="space-y-8">
           <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Genre</h2>
+            <h2 className="mb-2 font-mono text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Genre</h2>
             <nav className="flex flex-wrap gap-1 lg:flex-col lg:items-start">
               <Link href={`/novels${params.sort ? `?sort=${params.sort}` : ""}`} className={pill(!params.genre)}>
                 All genres
@@ -54,7 +54,7 @@ export async function BrowseView({ params, basePath, title, intro }: { params: P
             </nav>
           </div>
           <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Status</h2>
+            <h2 className="mb-2 font-mono text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Status</h2>
             <nav className="flex flex-wrap gap-1 lg:flex-col lg:items-start">
               {[
                 [undefined, "Any"],

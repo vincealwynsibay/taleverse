@@ -21,7 +21,7 @@ export function Section({
     <section className={cn("container-page mt-16", className)}>
       <div className="mb-6 flex items-end justify-between gap-4">
         <div>
-          {eyebrow && <p className="mb-1 text-xs font-semibold tracking-[0.2em] text-primary uppercase">{eyebrow}</p>}
+          {eyebrow && <p className="mb-1 font-mono text-xs font-semibold tracking-[0.2em] text-primary uppercase">{eyebrow}</p>}
           <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
         </div>
         {href && (

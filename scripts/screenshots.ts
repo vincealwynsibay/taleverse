@@ -90,7 +90,7 @@ async function contextFor(browser: Awaited<ReturnType<typeof chromium.launch>>, 
     { name: "tv_dev_as", value: shot.persona ?? "reader", domain: "localhost", path: "/" },
   ];
   if (shot.reader) {
-    const settings = { font: "serif", size: 2, leading: 1, width: 1, theme: shot.reader };
+    const settings = { font: "sans", size: 2, leading: 1, width: 1, theme: shot.reader };
     cookies.push({ name: "tv_reader", value: encodeURIComponent(JSON.stringify(settings)), domain: "localhost", path: "/" });
   }
   await ctx.addCookies(cookies);

@@ -198,8 +198,8 @@ export function ReaderShell({ novel, chapter, prev, next, toc, initialSettings, 
                     value={settings.font}
                     onChange={(font) => update({ font })}
                     options={[
-                      { value: "serif", label: <span className="font-serif">Literata</span> },
-                      { value: "sans", label: <span className="font-sans">Inter</span> },
+                      { value: "sans", label: <span className="font-sans">Geist</span> },
+                      { value: "serif", label: <span className="font-serif">Serif</span> },
                     ]}
                   />
                 </Setting>

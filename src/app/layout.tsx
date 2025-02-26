@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, Literata } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -8,9 +8,8 @@ import { env } from "@/lib/env";
 import { authEnabled } from "@/lib/flags";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
-const literata = Literata({ subsets: ["latin"], variable: "--font-literata", display: "swap", style: ["normal", "italic"] });
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap", axes: ["opsz", "SOFT"] });
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans", display: "swap" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.appUrl),
@@ -31,7 +30,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const page = (
-    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${literata.variable} ${fraunces.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable}`}>
       <body className="min-h-dvh">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TooltipProvider delayDuration={200}>{children}</TooltipProvider>

@@ -34,7 +34,7 @@ export default async function HomePage() {
         />
         <div className="container-page grid items-center gap-12 py-14 md:grid-cols-[1.15fr_1fr] md:py-24">
           <div>
-            <p className="mb-4 text-xs font-semibold tracking-[0.25em] text-primary uppercase">Serial fiction · one chapter at a time</p>
+            <p className="mb-4 font-mono text-xs font-semibold tracking-[0.25em] text-primary uppercase">Serial fiction · one chapter at a time</p>
             <h1 className="font-display text-5xl leading-[0.95] font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
               Stories worth staying up&nbsp;for.
             </h1>

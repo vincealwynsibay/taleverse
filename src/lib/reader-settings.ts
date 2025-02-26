@@ -16,7 +16,7 @@ export const SIZES = ["1rem", "1.0625rem", "1.1875rem", "1.3125rem", "1.4375rem"
 export const LEADINGS = [1.6, 1.8, 2];
 export const WIDTHS = ["34rem", "40rem", "48rem"];
 
-export const defaultReaderSettings: ReaderSettings = { font: "serif", size: 2, leading: 1, width: 1, theme: "auto" };
+export const defaultReaderSettings: ReaderSettings = { font: "sans", size: 2, leading: 1, width: 1, theme: "auto" };
 
 const inRange = (n: unknown, len: number, fallback: number) =>
   typeof n === "number" && Number.isInteger(n) && n >= 0 && n < len ? n : fallback;
@@ -27,7 +27,7 @@ export function parseReaderSettings(raw: string | undefined): ReaderSettings {
     const v = JSON.parse(decodeURIComponent(raw));
     const d = defaultReaderSettings;
     return {
-      font: v.font === "sans" ? "sans" : "serif",
+      font: v.font === "serif" ? "serif" : "sans",
       size: inRange(v.size, SIZES.length, d.size),
       leading: inRange(v.leading, LEADINGS.length, d.leading),
       width: inRange(v.width, WIDTHS.length, d.width),
