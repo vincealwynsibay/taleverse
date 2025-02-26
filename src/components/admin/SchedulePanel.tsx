@@ -60,7 +60,7 @@ export function SchedulePanel({
     });
 
   return (
-    <div className={cn("space-y-4", !compact && "rounded-2xl border bg-card p-4")}>
+    <div className={cn("space-y-4", !compact && "rounded-md border bg-card p-4")}>
       <div className="flex items-center justify-between gap-2">
         <h3 className="flex items-center gap-2 text-sm font-semibold">
           <CalendarClock className="size-4 text-primary" aria-hidden /> Release
@@ -98,7 +98,7 @@ export function SchedulePanel({
       )}
 
       {mode !== "draft" && (
-        <div className="space-y-3 rounded-xl border border-dashed p-3">
+        <div className="space-y-3 rounded-md border border-dashed p-3">
           <label className="flex items-start gap-2 text-sm">
             <input type="checkbox" checked={early} onChange={(e) => setEarly(e.target.checked)} className="mt-0.5 accent-primary" />
             <span>

@@ -14,11 +14,11 @@ export function NovelCard({ novel, className, priority }: { novel: NovelCardData
         coverUrl={novel.coverUrl}
         hue={novel.coverHue}
         priority={priority}
-        className="w-full transition-transform duration-300 group-hover:-translate-y-1 group-hover:rotate-[-0.6deg]"
+        className="w-full transition-opacity group-hover:opacity-90"
       />
       <div className="space-y-1">
-        <h3 className="line-clamp-2 font-display text-[1.05rem] leading-snug font-semibold group-hover:text-primary">{novel.title}</h3>
-        <p className="truncate text-sm text-muted-foreground">{novel.author}</p>
+        <h3 className="line-clamp-2 text-sm leading-snug font-medium group-hover:text-primary">{novel.title}</h3>
+        <p className="truncate text-xs text-muted-foreground">{novel.author}</p>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
           {novel.ratingCount > 0 && (
             <span className="flex items-center gap-1">
@@ -39,11 +39,11 @@ export function NovelCard({ novel, className, priority }: { novel: NovelCardData
 
 export function NovelRow({ novel }: { novel: NovelCardData }) {
   return (
-    <Link href={`/novels/${novel.slug}`} className="group flex gap-4 rounded-xl p-3 transition-colors hover:bg-accent/60 sm:gap-5">
+    <Link href={`/novels/${novel.slug}`} className="group flex gap-4 rounded-md p-3 transition-colors hover:bg-accent/60 sm:gap-5">
       <NovelCover title={novel.title} author={novel.author} coverUrl={novel.coverUrl} hue={novel.coverHue} size="sm" className="w-20 sm:w-24" />
       <div className="min-w-0 flex-1 space-y-1.5 py-1">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <h3 className="font-display text-lg leading-snug font-semibold group-hover:text-primary">{novel.title}</h3>
+          <h3 className="text-base leading-snug font-semibold group-hover:text-primary">{novel.title}</h3>
           <StatusPill status={novel.status} />
         </div>
         <p className="text-sm text-muted-foreground">{novel.author}</p>
@@ -72,9 +72,8 @@ export function StatusPill({ status }: { status: "ONGOING" | "COMPLETED" | "HIAT
     HIATUS: "bg-warning/15 text-warning ring-warning/30",
   }[status];
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[0.65rem] font-semibold tracking-wider uppercase ring-1", styles)}>
-      {status === "ONGOING" && <span className="size-1.5 animate-pulse rounded-full bg-current" />}
-      {status.toLowerCase()}
+    <span className={cn("inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ring-1", styles)}>
+      {status[0] + status.slice(1).toLowerCase()}
     </span>
   );
 }

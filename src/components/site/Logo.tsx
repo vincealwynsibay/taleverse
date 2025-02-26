@@ -14,7 +14,7 @@ export function LogoMark({ className }: { className?: string }) {
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <Link href="/" className={cn("flex items-center gap-2 font-display text-xl font-semibold tracking-tight", className)}>
+    <Link href="/" className={cn("flex items-center gap-2 text-base font-semibold tracking-tight", className)}>
       <LogoMark />
       <span>Taleverse</span>
     </Link>

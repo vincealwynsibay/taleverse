@@ -30,10 +30,10 @@ export async function ogCard({ eyebrow, title, subtitle, hue, meta }: { eyebrow:
             <div style={{ width: 80, height: 2, background: "rgba(255,255,255,0.6)" }} />
             <div style={{ fontSize: 40, lineHeight: 1.05, fontFamily: "Geist", letterSpacing: -1 }}>{title.split(/[;:]/)[0]}</div>
           </div>
-          {subtitle && <div style={{ fontSize: 16, letterSpacing: 3, textTransform: "uppercase", opacity: 0.8 }}>{subtitle}</div>}
+          {subtitle && <div style={{ fontSize: 18, opacity: 0.85 }}>{subtitle}</div>}
         </div>
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, gap: 20 }}>
-          <div style={{ fontSize: 24, letterSpacing: 6, textTransform: "uppercase", color: "#2dd4bf" }}>{eyebrow}</div>
+          <div style={{ fontSize: 26, color: "#2dd4bf" }}>{eyebrow}</div>
           <div style={{ fontSize: 68, lineHeight: 1.02, fontFamily: "Geist", letterSpacing: -2 }}>{title}</div>
           {subtitle && <div style={{ fontSize: 32, color: "#a3a3a3" }}>{subtitle}</div>}
           {meta && meta.length > 0 && <div style={{ display: "flex", gap: 28, fontSize: 26, color: "#a3a3a3", marginTop: 12 }}>{meta.map((m) => <div key={m}>{m}</div>)}</div>}

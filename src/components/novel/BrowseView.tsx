@@ -26,7 +26,7 @@ export async function BrowseView({ params, basePath, title, intro }: { params: P
   return (
     <div className="container-page py-10">
       <header className="mb-8">
-        <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">{title}</h1>
+        <h1 className="text-2xl font-semibold">{title}</h1>
         {intro && <p className="mt-2 max-w-2xl text-muted-foreground">{intro}</p>}
         {params.q && (
           <p className="mt-4 flex items-center gap-2 text-sm">
@@ -41,7 +41,7 @@ export async function BrowseView({ params, basePath, title, intro }: { params: P
       <div className="grid gap-10 lg:grid-cols-[220px_1fr]">
         <aside className="space-y-8">
           <div>
-            <h2 className="mb-2 font-mono text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Genre</h2>
+            <h2 className="mb-2 text-xs font-medium text-muted-foreground">Genre</h2>
             <nav className="flex flex-wrap gap-1 lg:flex-col lg:items-start">
               <Link href={`/novels${params.sort ? `?sort=${params.sort}` : ""}`} className={pill(!params.genre)}>
                 All genres
@@ -54,7 +54,7 @@ export async function BrowseView({ params, basePath, title, intro }: { params: P
             </nav>
           </div>
           <div>
-            <h2 className="mb-2 font-mono text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">Status</h2>
+            <h2 className="mb-2 text-xs font-medium text-muted-foreground">Status</h2>
             <nav className="flex flex-wrap gap-1 lg:flex-col lg:items-start">
               {[
                 [undefined, "Any"],

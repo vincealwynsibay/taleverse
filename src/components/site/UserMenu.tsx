@@ -93,7 +93,7 @@ export function MobileNav({ viewer }: { viewer: HeaderViewer }) {
       </SheetTrigger>
       <SheetContent side="left" className="w-[85vw] max-w-sm">
         <SheetHeader>
-          <SheetTitle className="font-display text-xl">Taleverse</SheetTitle>
+          <SheetTitle className="text-xl">Taleverse</SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-6 px-4">
           <SearchBox />

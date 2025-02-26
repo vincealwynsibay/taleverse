@@ -96,7 +96,7 @@ export function SearchBox({ className, autoFocus }: { className?: string; autoFo
         <ul
           id={listId}
           role="listbox"
-          className="absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-xl border bg-popover p-1 shadow-xl"
+          className="absolute top-full right-0 left-0 z-50 mt-2 overflow-hidden rounded-md border bg-popover p-1 shadow-sm"
         >
           {shown.map((r, i) => (
             <li key={r.slug} id={`${listId}-${i}`} role="option" aria-selected={i === active}>

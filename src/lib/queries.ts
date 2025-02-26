@@ -45,35 +45,49 @@ export const getGenres = cache(() =>
 
 export async function getHomeData(viewer: Viewer | null) {
   const now = new Date();
-  const [featured, latest, topRated, earlyAccess, continueReading, novelCount, chapterCount] = await Promise.all([
-    db.novel.findMany({ select: novelCardSelect, orderBy: { views: "desc" }, take: 5 }),
+  const [popular, recent, topRated, upcoming, continueReading] = await Promise.all([
+    db.novel.findMany({ select: novelCardSelect, orderBy: { views: "desc" }, take: 6 }),
     db.chapter.findMany({
       where: published(now),
       orderBy: { publishedAt: "desc" },
-      take: 8,
+      take: 60,
       select: {
         id: true,
         number: true,
         title: true,
         publishedAt: true,
         freeAt: true,
-        novel: { select: { slug: true, title: true, coverUrl: true, coverHue: true, author: true } },
+        novel: { select: { id: true, slug: true, title: true, coverUrl: true, coverHue: true, status: true } },
       },
     }),
-    db.novel.findMany({ select: novelCardSelect, orderBy: [{ ratingAvg: "desc" }, { ratingCount: "desc" }], take: 6 }),
-    db.chapter.count({ where: { ...published(now), freeAt: { gt: now } } }),
+    db.novel.findMany({
+      select: { id: true, slug: true, title: true, author: true, ratingAvg: true, ratingCount: true },
+      orderBy: [{ ratingAvg: "desc" }, { ratingCount: "desc" }, { views: "desc" }],
+      take: 7,
+    }),
+    db.chapter.findMany({
+      where: { publishedAt: { gt: now } },
+      orderBy: { publishedAt: "asc" },
+      take: 5,
+      select: { id: true, number: true, publishedAt: true, novel: { select: { slug: true, title: true } } },
+    }),
     viewer ? getContinueReading(viewer.id, 4) : Promise.resolve([]),
-    db.novel.count(),
-    db.chapter.count({ where: published(now) }),
   ]);
+
+  // "Latest updates", web-novel style: one row per novel with its newest chapters.
+  const byNovel = new Map<number, { novel: (typeof recent)[number]["novel"]; chapters: typeof recent }>();
+  for (const c of recent) {
+    const row = byNovel.get(c.novel.id) ?? { novel: c.novel, chapters: [] };
+    if (row.chapters.length < 3) row.chapters.push(c);
+    byNovel.set(c.novel.id, row);
+  }
+
   return {
-    featured: await withChapterCounts(featured, now),
-    latest,
-    topRated: await withChapterCounts(topRated, now),
-    earlyAccessCount: earlyAccess,
+    popular: await withChapterCounts(popular, now),
+    updates: [...byNovel.values()].slice(0, 10),
+    topRated,
+    upcoming,
     continueReading,
-    novelCount,
-    chapterCount,
   };
 }
 

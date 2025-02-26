@@ -20,7 +20,7 @@ export default async function LibraryPage() {
   return (
     <div className="container-page py-10">
       <header className="mb-8">
-        <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Your library</h1>
+        <h1 className="text-2xl font-semibold">Your library</h1>
         <p className="mt-2 text-muted-foreground">Novels you&apos;re following, and where you left off.</p>
       </header>
 
@@ -39,12 +39,12 @@ export default async function LibraryPage() {
             const current = progress?.chapter.number ?? 0;
             const pct = novel.chapterCount ? ((Math.max(0, current - 1) + (progress?.position ?? 0)) / novel.chapterCount) * 100 : 0;
             return (
-              <li key={novel.id} className="flex gap-4 rounded-2xl border bg-card p-4">
+              <li key={novel.id} className="flex gap-4 rounded-md border bg-card p-4">
                 <Link href={`/novels/${novel.slug}`} className="shrink-0">
                   <NovelCover title={novel.title} author={novel.author} coverUrl={novel.coverUrl} hue={novel.coverHue} size="sm" className="w-20" />
                 </Link>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <Link href={`/novels/${novel.slug}`} className="line-clamp-2 font-display leading-snug font-semibold hover:text-primary">
+                  <Link href={`/novels/${novel.slug}`} className="line-clamp-2 leading-snug font-semibold hover:text-primary">
                     {novel.title}
                   </Link>
                   <p className="truncate text-sm text-muted-foreground">{novel.author}</p>

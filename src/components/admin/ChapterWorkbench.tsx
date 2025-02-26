@@ -66,9 +66,9 @@ export function ChapterWorkbench({ chapterId, number, initialTitle, initialConte
   }, [save, status.kind]);
 
   return (
-    <div className="rounded-2xl border bg-card px-6 py-6 sm:px-10">
+    <div className="rounded-md border bg-card px-6 py-6 sm:px-10">
       <div className="mb-6 flex items-center justify-between gap-4 text-xs text-muted-foreground">
-        <span className="font-semibold tracking-[0.2em] uppercase">Chapter {number}</span>
+        <span>Chapter {number}</span>
         <span aria-live="polite" className="flex items-center gap-1.5">
           {status.kind === "saving" && (
             <>
@@ -98,7 +98,7 @@ export function ChapterWorkbench({ chapterId, number, initialTitle, initialConte
         placeholder="Chapter title (optional)"
         aria-label="Chapter title"
         maxLength={150}
-        className="mb-6 w-full bg-transparent font-display text-3xl font-semibold outline-none placeholder:text-muted-foreground/50"
+        className="mb-6 w-full bg-transparent text-2xl font-semibold outline-none placeholder:text-muted-foreground/50"
       />
       <ChapterEditor
         initial={initialContent}

@@ -78,9 +78,9 @@ export default async function ReaderPage({ params }: PageProps<"/novels/[slug]/[
           </p>
         )}
         <header className="mb-10 text-center font-sans">
-          <p className="font-mono text-xs font-semibold tracking-[0.25em] uppercase opacity-55">Chapter {number}</p>
+          <p className="text-sm opacity-60">Chapter {number}</p>
           {chapter.title && (
-            <h1 className="mt-3 font-display text-3xl leading-tight font-semibold text-balance sm:text-4xl">{chapter.title}</h1>
+            <h1 className="mt-3 text-2xl leading-tight font-semibold text-balance sm:text-3xl">{chapter.title}</h1>
           )}
           <p className="mt-4 text-xs opacity-50">
             {chapter.publishedAt && format(chapter.publishedAt, "MMMM d, yyyy")} · {readingMinutes(chapter.wordCount)} min read

@@ -24,7 +24,7 @@ export default async function AdminNovelPage({ params }: PageProps<"/admin/novel
           <Link href="/admin" className="mb-1 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             <ChevronLeft className="size-4" /> Overview
           </Link>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">{novel.title}</h1>
+          <h1 className="text-2xl font-semibold">{novel.title}</h1>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline">
@@ -36,7 +36,7 @@ export default async function AdminNovelPage({ params }: PageProps<"/admin/novel
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-2xl border bg-card">
+      <section className="overflow-hidden rounded-md border bg-card">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <h2 className="font-semibold">Chapters</h2>
           <p className="text-xs text-muted-foreground">{novel.chapters.length} total</p>
@@ -93,10 +93,10 @@ export default async function AdminNovelPage({ params }: PageProps<"/admin/novel
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-semibold">Details</h2>
+          <h2 className="text-base font-semibold">Details</h2>
           <DeleteNovelButton novelId={novel.id} title={novel.title} />
         </div>
-        <div className="rounded-2xl border bg-card p-6">
+        <div className="rounded-md border bg-card p-6">
           <NovelForm novel={novel} genres={genres} />
         </div>
       </section>

@@ -36,11 +36,11 @@ export function Paywall({ chapterId, price, freeAt, balance, returnTo }: Props) 
     });
 
   return (
-    <div className="relative mt-2 rounded-3xl border border-current/10 bg-[color-mix(in_oklch,var(--reader-bg)_92%,var(--primary))] p-6 text-center font-sans shadow-xl sm:p-8">
+    <div className="relative mt-2 rounded-lg border border-current/10 bg-[color-mix(in_oklch,var(--reader-bg)_92%,var(--primary))] p-6 text-center font-sans shadow-sm sm:p-8">
       <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary/15 text-primary">
         <LockKeyholeOpen className="size-6" aria-hidden />
       </div>
-      <h2 className="font-display text-2xl font-semibold">This chapter is in early access</h2>
+      <h2 className="text-lg font-semibold">This chapter is in early access</h2>
       <p className="mx-auto mt-2 max-w-sm text-sm opacity-75">
         Read it now for <strong className="text-primary">{price} credits</strong>, or wait: it&apos;s free for everyone in{" "}
         <span suppressHydrationWarning className="font-medium">

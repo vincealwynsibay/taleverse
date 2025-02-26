@@ -71,14 +71,9 @@ export default async function NovelPage({ params, searchParams }: PageProps<"/no
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
 
       {/* ── Header ── */}
-      <section className="relative isolate overflow-hidden border-b">
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10 opacity-35 dark:opacity-25"
-          style={{ background: `radial-gradient(70% 90% at 20% 0%, oklch(0.6 0.12 ${novel.coverHue}), transparent 70%)` }}
-        />
-        <div className="container-page grid gap-8 py-10 md:grid-cols-[220px_1fr] md:py-14">
-          <NovelCover title={novel.title} author={novel.author} coverUrl={novel.coverUrl} hue={novel.coverHue} size="lg" priority className="mx-auto w-44 md:w-full" />
+      <section className="border-b">
+        <div className="container-page grid gap-6 py-8 md:grid-cols-[180px_1fr]">
+          <NovelCover title={novel.title} author={novel.author} coverUrl={novel.coverUrl} hue={novel.coverHue} size="lg" priority className="mx-auto w-40 md:w-full" />
           <div className="flex flex-col">
             <div className="flex flex-wrap items-center gap-2">
               <StatusPill status={novel.status} />
@@ -88,7 +83,7 @@ export default async function NovelPage({ params, searchParams }: PageProps<"/no
                 </Link>
               ))}
             </div>
-            <h1 className="mt-4 font-display text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-5xl">{novel.title}</h1>
+            <h1 className="mt-4 text-3xl font-semibold text-balance">{novel.title}</h1>
             <p className="mt-2 text-lg text-muted-foreground">
               {novel.author}
               {novel.releaseYear && <span className="text-muted-foreground/70"> · first published {novel.releaseYear}</span>}
@@ -151,7 +146,7 @@ export default async function NovelPage({ params, searchParams }: PageProps<"/no
         {/* ── Chapters ── */}
         <section id="chapters" className="scroll-mt-24">
           <div className="mb-4 flex items-center justify-between gap-4">
-            <h2 className="font-display text-2xl font-semibold">Chapters</h2>
+            <h2 className="text-lg font-semibold">Chapters</h2>
             <Button asChild variant="ghost" size="sm">
               <Link href={listHref({ order: order === "asc" ? "desc" : "asc", page: 1 })}>
                 <ArrowDownUp /> {order === "asc" ? "Oldest first" : "Newest first"}
@@ -159,11 +154,11 @@ export default async function NovelPage({ params, searchParams }: PageProps<"/no
             </Button>
           </div>
           {list.items.length ? (
-            <ol className="divide-y rounded-2xl border bg-card">
+            <ol className="divide-y rounded-md border bg-card">
               {list.items.map((c) => (
                 <li key={c.id}>
                   <Link href={`/novels/${slug}/${c.number}`} className="group flex items-center gap-4 px-4 py-3 hover:bg-accent/50">
-                    <span className="w-8 shrink-0 text-right font-display text-lg text-muted-foreground tabular-nums">{c.number}</span>
+                    <span className="w-8 shrink-0 text-right text-lg text-muted-foreground tabular-nums">{c.number}</span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium group-hover:text-primary">{c.title || `Chapter ${c.number}`}</p>
                       <p className="text-xs text-muted-foreground">
@@ -209,7 +204,7 @@ export default async function NovelPage({ params, searchParams }: PageProps<"/no
         <section id="reviews" className="scroll-mt-24 space-y-6">
           <div className="flex items-center gap-2">
             <MessageSquareText className="size-5 text-primary" aria-hidden />
-            <h2 className="font-display text-2xl font-semibold">Reviews</h2>
+            <h2 className="text-lg font-semibold">Reviews</h2>
           </div>
           {viewer ? (
             <ReviewForm novelId={novel.id} existing={state.myReview && { rating: state.myReview.rating, body: state.myReview.body }} />

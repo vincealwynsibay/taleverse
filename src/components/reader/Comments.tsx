@@ -28,7 +28,7 @@ export function Comments({
 
   return (
     <section className="mx-auto max-w-[var(--reader-width)] px-5 pt-4 pb-16 font-sans" aria-labelledby="comments-heading">
-      <h2 id="comments-heading" className="mb-6 flex items-center gap-2 font-display text-xl font-semibold">
+      <h2 id="comments-heading" className="mb-6 flex items-center gap-2 text-base font-semibold">
         <MessageCircle className="size-5 opacity-60" aria-hidden /> {comments.length} {comments.length === 1 ? "comment" : "comments"}
       </h2>
 

@@ -40,7 +40,7 @@ export default async function EditChapterPage({ params }: PageProps<"/admin/nove
         />
         <aside className="space-y-4 lg:sticky lg:top-20">
           <SchedulePanel chapterId={chapter.id} publishedAt={chapter.publishedAt} freeAt={chapter.freeAt} unlockPrice={chapter.unlockPrice} />
-          <div className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
+          <div className="rounded-md border bg-card p-4 text-sm text-muted-foreground">
             <p>
               <span className="font-medium text-foreground tabular-nums">{chapter.wordCount.toLocaleString()}</span> words ·{" "}
               {readingMinutes(chapter.wordCount)} min read

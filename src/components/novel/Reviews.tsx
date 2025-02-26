@@ -58,7 +58,7 @@ export function ReviewForm({ novelId, existing }: { novelId: number; existing: {
 
   if (!editing && existing) {
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-card p-4">
         <p className="flex items-center gap-2 text-sm">
           You rated this <RatingStars value={existing.rating} />
         </p>
@@ -92,7 +92,7 @@ export function ReviewForm({ novelId, existing }: { novelId: number; existing: {
 
   return (
     <form
-      className="space-y-3 rounded-2xl border bg-card p-4"
+      className="space-y-3 rounded-md border bg-card p-4"
       onSubmit={(e) => {
         e.preventDefault();
         start(async () => {
@@ -158,7 +158,7 @@ export function ReviewList({ reviews, viewerId }: { reviews: Review[]; viewerId:
 
 export function SignInToReview() {
   return (
-    <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">
+    <p className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
       <Link href="/sign-in" className="font-medium text-foreground underline underline-offset-2">
         Sign in
       </Link>{" "}

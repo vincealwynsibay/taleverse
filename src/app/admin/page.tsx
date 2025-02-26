@@ -23,7 +23,7 @@ export default async function AdminOverviewPage() {
     <div className="space-y-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-semibold tracking-tight">Overview</h1>
+          <h1 className="text-2xl font-semibold">Overview</h1>
           <p className="text-sm text-muted-foreground">Your catalogue, release queue and revenue at a glance.</p>
         </div>
         <Button asChild>
@@ -35,11 +35,11 @@ export default async function AdminOverviewPage() {
 
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {cards.map((c) => (
-          <div key={c.label} className="rounded-2xl border bg-card p-4">
+          <div key={c.label} className="rounded-md border bg-card p-4">
             <dt className="flex items-center gap-2 text-xs text-muted-foreground">
               <c.icon className="size-4" aria-hidden /> {c.label}
             </dt>
-            <dd className="mt-2 font-display text-3xl font-semibold tabular-nums">{c.value.toLocaleString()}</dd>
+            <dd className="mt-2 text-2xl font-semibold tabular-nums">{c.value.toLocaleString()}</dd>
             <dd className="text-xs text-muted-foreground">{c.sub}</dd>
           </div>
         ))}
@@ -47,8 +47,8 @@ export default async function AdminOverviewPage() {
 
       <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
         <section>
-          <h2 className="mb-3 font-display text-xl font-semibold">Novels</h2>
-          <div className="overflow-hidden rounded-2xl border bg-card">
+          <h2 className="mb-3 text-base font-semibold">Novels</h2>
+          <div className="overflow-hidden rounded-md border bg-card">
             <table className="w-full text-sm">
               <thead className="border-b bg-muted/40 text-left text-xs text-muted-foreground">
                 <tr>
@@ -84,8 +84,8 @@ export default async function AdminOverviewPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 font-display text-xl font-semibold">Recent activity</h2>
-          <ol className="divide-y rounded-2xl border bg-card">
+          <h2 className="mb-3 text-base font-semibold">Recent activity</h2>
+          <ol className="divide-y rounded-md border bg-card">
             {recentSales.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">

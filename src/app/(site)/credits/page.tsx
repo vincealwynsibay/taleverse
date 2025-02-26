@@ -41,7 +41,7 @@ export default async function CreditsPage({ searchParams }: PageProps<"/credits"
       )}
 
       {purchase === "success" && (
-        <div role="status" className="mb-8 flex items-center gap-3 rounded-2xl border border-success/30 bg-success/10 p-4 text-sm">
+        <div role="status" className="mb-8 flex items-center gap-3 rounded-md border border-success/30 bg-success/10 p-4 text-sm">
           <CircleCheck className="size-5 text-success" aria-hidden />
           <span>
             Payment received, credits added. Happy reading!
@@ -57,7 +57,7 @@ export default async function CreditsPage({ searchParams }: PageProps<"/credits"
         </div>
       )}
       {purchase === "cancelled" && (
-        <p role="status" className="mb-8 rounded-2xl border p-4 text-sm text-muted-foreground">
+        <p role="status" className="mb-8 rounded-md border p-4 text-sm text-muted-foreground">
           Checkout cancelled. You weren&apos;t charged.
         </p>
       )}
@@ -65,34 +65,34 @@ export default async function CreditsPage({ searchParams }: PageProps<"/credits"
       <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
         <div>
           <header className="mb-8">
-            <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">Credits</h1>
+            <h1 className="text-2xl font-semibold">Credits</h1>
             <p className="mt-2 text-muted-foreground">Credits unlock early-access chapters. Most chapters cost 5.</p>
           </header>
 
-          <div className="mb-10 flex items-center gap-4 rounded-3xl border bg-card p-6">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-amber-400/15">
+          <div className="mb-10 flex items-center gap-4 rounded-lg border bg-card p-6">
+            <div className="flex size-14 items-center justify-center rounded-md bg-amber-400/15">
               <Coins className="size-7 text-amber-500" aria-hidden />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Your balance</p>
-              <p className="font-display text-4xl font-semibold tabular-nums">{balance}</p>
+              <p className="text-3xl font-semibold tabular-nums">{balance}</p>
             </div>
           </div>
 
-          <h2 className="mb-4 font-display text-xl font-semibold">Top up</h2>
+          <h2 className="mb-4 text-base font-semibold">Top up</h2>
           <ul className="grid gap-4 sm:grid-cols-3">
             {packs.map((p) => (
               <li
                 key={p.id}
-                className={cn("relative flex flex-col rounded-2xl border bg-card p-5", p.highlight && "border-primary/50 ring-2 ring-primary/20")}
+                className={cn("relative flex flex-col rounded-md border bg-card p-5", p.highlight && "border-primary/50 ring-2 ring-primary/20")}
               >
                 {p.highlight && (
-                  <span className="absolute -top-2.5 left-5 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-[0.65rem] font-semibold tracking-wide text-primary-foreground uppercase">
+                  <span className="absolute -top-2.5 left-5 inline-flex items-center gap-1 rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
                     <Sparkles className="size-3" /> Best value
                   </span>
                 )}
                 <p className="text-sm text-muted-foreground">{p.name}</p>
-                <p className="mt-1 font-display text-3xl font-semibold tabular-nums">{p.credits}</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums">{p.credits}</p>
                 <p className="text-xs text-muted-foreground">
                   credits · about {Math.floor(p.credits / 5)} chapters
                 </p>
@@ -116,8 +116,8 @@ export default async function CreditsPage({ searchParams }: PageProps<"/credits"
         </div>
 
         <aside>
-          <h2 className="mb-4 font-display text-xl font-semibold">History</h2>
-          <ol className="divide-y rounded-2xl border bg-card">
+          <h2 className="mb-4 text-base font-semibold">History</h2>
+          <ol className="divide-y rounded-md border bg-card">
             {history.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-4 px-4 py-3">
                 <div className="min-w-0">
