@@ -60,6 +60,11 @@ model Novel {
   synopsis    String
   releaseYear Int?
   coverUrl    String?
+  // Wide artwork for the novel page and the home spotlight.
+  bannerUrl   String?
+  // Attribution for public-domain cover/banner art, e.g. "Cover: 1897 first edition · Public domain".
+  artCredit   String?
+  artCreditUrl String?
   // Hue (0-360) for the generated typographic cover when there's no coverUrl.
   coverHue    Int         @default(200)
   status      NovelStatus @default(ONGOING)

@@ -22,6 +22,10 @@ export type ReaderSettings = {
   showChapter: boolean;
   /** Tap the left/right third of the page to move a screen; middle toggles controls. */
   tapZones: boolean;
+  /** Continuous scrolling, or book-like pages. */
+  layout: "scroll" | "paged";
+  /** Page-turn animation in paged layout. */
+  pageTurn: "flip" | "slide" | "none";
 };
 
 export const READER_COOKIE = "tv_reader";
@@ -44,6 +48,8 @@ export const defaultReaderSettings: ReaderSettings = {
   showPercent: true,
   showChapter: false,
   tapZones: false,
+  layout: "scroll",
+  pageTurn: "flip",
 };
 
 const inRange = (n: unknown, len: number, fallback: number) =>
@@ -67,6 +73,8 @@ export function parseReaderSettings(raw: string | undefined): ReaderSettings {
       showPercent: v.showPercent !== false,
       showChapter: v.showChapter === true,
       tapZones: v.tapZones === true,
+      layout: v.layout === "paged" ? "paged" : "scroll",
+      pageTurn: v.pageTurn === "slide" || v.pageTurn === "none" ? v.pageTurn : "flip",
     };
   } catch {
     return defaultReaderSettings;

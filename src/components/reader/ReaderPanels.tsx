@@ -106,7 +106,29 @@ export function ReaderSettingsPanel({ settings, update, chapter, prev, next, onG
         Comments <MessageSquare className="size-4 opacity-60" />
       </button>
 
-      <Group label="Auto scroll">
+      <Group label="Layout">
+        <Segmented
+          value={settings.layout}
+          onChange={(layout) => update({ layout })}
+          options={[
+            { value: "scroll", label: "Scroll" },
+            { value: "paged", label: "Pages" },
+          ]}
+        />
+        {settings.layout === "paged" && (
+          <Segmented
+            value={settings.pageTurn}
+            onChange={(pageTurn) => update({ pageTurn })}
+            options={[
+              { value: "flip", label: "Flip" },
+              { value: "slide", label: "Slide" },
+              { value: "none", label: "None" },
+            ]}
+          />
+        )}
+      </Group>
+
+      <Group label={settings.layout === "paged" ? "Auto turn" : "Auto scroll"}>
         <Segmented
           value={autoValue}
           onChange={(v) => (v === "off" ? auto.stop() : (update({ autoStyle: v }), auto.start(v)))}

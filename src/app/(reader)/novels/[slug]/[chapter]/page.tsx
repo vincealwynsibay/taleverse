@@ -38,8 +38,9 @@ export async function generateMetadata({ params }: PageProps<"/novels/[slug]/[ch
   };
 }
 
-export default async function ReaderPage({ params }: PageProps<"/novels/[slug]/[chapter]">) {
+export default async function ReaderPage({ params, searchParams }: PageProps<"/novels/[slug]/[chapter]">) {
   const { slug, number, viewer, data } = await load(params);
+  const startAtEnd = (await searchParams).at === "end";
   const { chapter, body, access } = data;
   const [settingsCookie, toc, comments, libraryEntry] = await Promise.all([
     cookies().then((c) => c.get(READER_COOKIE)?.value),
@@ -69,6 +70,7 @@ export default async function ReaderPage({ params }: PageProps<"/novels/[slug]/[
       inLibrary={Boolean(libraryEntry)}
       trackProgress={!locked}
       savedPosition={data.savedPosition}
+      startAtEnd={startAtEnd}
       footer={
         !locked && (
           <>

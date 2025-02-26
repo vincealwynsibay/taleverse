@@ -13,7 +13,10 @@ import {
   ChevronRight,
   Expand,
   Headphones,
-  House,
+  List,
+  Minus,
+  Plus,
+  Type,
   Pause,
   Play,
   Shrink,
@@ -29,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { READER_COOKIE, SCROLL_SPEEDS, readerStyle, type ReaderSettings } from "@/lib/reader-settings";
 import { chapterFraction, scrollToFraction, useAutoScroll, useMediaQuery, useReadAloud } from "./hooks";
 import { ChapterList, ReaderSettingsPanel, TTS_RATES, type TocItem } from "./ReaderPanels";
+import { Pager, type PagerApi } from "./Pager";
 
 type Props = {
   novel: { id: number; slug: string; title: string };
@@ -41,23 +45,29 @@ type Props = {
   inLibrary: boolean;
   trackProgress: boolean;
   savedPosition: number;
+  /** Open on the last page (arrived by paging back from the next chapter). */
+  startAtEnd?: boolean;
   children: React.ReactNode;
   /** Rendered below the chapter (up-next card, comments). */
   footer?: React.ReactNode;
 };
 
-type Panel = "chapters" | "settings" | null;
+type Panel = "chapters" | "settings" | "comments" | null;
 
-/** Floating rounded control, styled against the current reading theme. */
-const pill =
-  "border border-[color-mix(in_oklch,var(--reader-fg)_14%,transparent)] bg-[color-mix(in_oklch,var(--reader-fg)_7%,var(--reader-bg))] text-reader-fg shadow-[0_4px_16px_rgb(0_0_0/0.18)] backdrop-blur";
+/** Seconds per page when auto-turning in paged layout, by speed setting. */
+const PAGE_SECONDS = [40, 30, 22, 16, 11];
+
+/** Solid bar docked to a screen edge, styled against the current reading theme. */
+const bar = "bg-reader-bg text-reader-fg border-[color-mix(in_oklch,var(--reader-fg)_12%,transparent)]";
+const iconBtn =
+  "flex size-10 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[color-mix(in_oklch,var(--reader-fg)_8%,transparent)] disabled:opacity-35 disabled:hover:bg-transparent [&_svg]:size-5";
 
 /**
  * App-style reader (after chikari.moe). The page is clear while reading; tap it
  * (or move the pointer to an edge on desktop) to bring up floating controls.
  */
 export function ReaderShell(props: Props) {
-  const { novel, chapter, prev, next, toc, initialSettings, signedIn, trackProgress, savedPosition, children, footer } = props;
+  const { novel, chapter, prev, next, toc, initialSettings, signedIn, trackProgress, savedPosition, startAtEnd, children, footer } = props;
   const router = useRouter();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [settings, setSettings] = useState(initialSettings);
@@ -70,13 +80,17 @@ export function ReaderShell(props: Props) {
   const [libraryPending, startLibrary] = useTransition();
   const lastY = useRef(0);
   const lastSaved = useRef(-1);
+  const fraction = useRef(0);
+  const pager = useRef<PagerApi>(null);
+  // Paged layout only for readable chapters (a locked chapter shows the paywall in scroll layout).
+  const paged = settings.layout === "paged" && trackProgress;
   // Sheets lock body scroll and restore it on close; don't read that jump as "reading down".
   const ignoreScrollUntil = useRef(0);
   useEffect(() => {
     ignoreScrollUntil.current = panel ? Number.POSITIVE_INFINITY : performance.now() + 400;
   }, [panel]);
 
-  const auto = useAutoScroll(SCROLL_SPEEDS[settings.speed], settings.autoStyle);
+  const auto = useAutoScroll(SCROLL_SPEEDS[settings.speed], settings.autoStyle, !paged);
   const tts = useReadAloud();
   const minutesLeft = Math.max(0, Math.ceil(((1 - progress) * chapter.wordCount) / 230));
   const chapterIndex = toc.findIndex((c) => c.number === chapter.number);
@@ -95,7 +109,7 @@ export function ReaderShell(props: Props) {
   const save = useCallback(
     (force = false) => {
       if (!signedIn || !trackProgress) return;
-      const f = Math.round(chapterFraction() * 100) / 100;
+      const f = Math.round(fraction.current * 100) / 100;
       if (!force && Math.abs(f - lastSaved.current) < 0.05) return;
       lastSaved.current = f;
       void saveProgressAction(chapter.id, f);
@@ -122,8 +136,10 @@ export function ReaderShell(props: Props) {
     const onScroll = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
+        if (document.getElementById("pager-content")) return; // paged layout reports its own progress
         const y = window.scrollY;
         const f = chapterFraction();
+        fraction.current = f;
         setProgress(f);
         if (y > lastY.current + 8 && y > 120 && performance.now() > ignoreScrollUntil.current) setChrome(false);
         if (f >= 0.995) setChrome(true);
@@ -173,9 +189,45 @@ export function ReaderShell(props: Props) {
   }, [auto, tts]);
 
   const toComments = () => {
+    if (paged) return setPanel("comments");
     setPanel(null);
     document.getElementById("comments-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  // ── Paged layout ──
+  const onPagerProgress = useCallback((f: number) => {
+    fraction.current = f;
+    setProgress(f);
+  }, []);
+  const toPrevChapterEnd = useCallback(() => prev && router.push(`/novels/${novel.slug}/${prev}?at=end`), [novel.slug, prev, router]);
+  const afterLastPage = useCallback(() => {
+    if (auto.playing) {
+      auto.setPlaying(false);
+      setChrome(true);
+    } else if (next) go(next);
+    else setChrome(true);
+  }, [auto, go, next]);
+
+  // Auto-play in paged layout turns pages on a timer.
+  useEffect(() => {
+    if (!paged || !auto.playing) return;
+    const t = setInterval(() => pager.current?.next(), PAGE_SECONDS[settings.speed] * 1000);
+    return () => clearInterval(t);
+  }, [paged, auto.playing, settings.speed]);
+
+  // Read-aloud announces each block; follow it in either layout.
+  useEffect(() => {
+    const onReveal = (e: Event) => {
+      const el = (e as CustomEvent<HTMLElement>).detail;
+      if (paged) pager.current?.reveal(el);
+      else el.scrollIntoView({ block: "center", behavior: "smooth" });
+    };
+    window.addEventListener("reader:reveal", onReveal);
+    return () => window.removeEventListener("reader:reveal", onReveal);
+  }, [paged]);
+
+  const seek = (f: number) => (paged ? pager.current?.goToFraction(f) : scrollToFraction(f));
+  const nextItem = next ? toc.find((c) => c.number === next) : undefined;
 
   const toggleFullscreen = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => {});
 
@@ -185,7 +237,11 @@ export function ReaderShell(props: Props) {
       if (e.target instanceof HTMLElement && (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName) || e.target.isContentEditable)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const k = e.key.toLowerCase();
-      if (e.key === "ArrowLeft") go(prev);
+      if (paged && (e.key === "ArrowLeft" || e.key === "PageUp")) pager.current?.prev();
+      else if (paged && (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ")) {
+        e.preventDefault();
+        pager.current?.next();
+      } else if (e.key === "ArrowLeft") go(prev);
       else if (e.key === "ArrowRight") go(next);
       else if (k === "p") toggleAuto();
       else if (k === "l" && tts.supported) toggleTts();
@@ -197,7 +253,7 @@ export function ReaderShell(props: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go, next, panel, prev, toggleAuto, toggleTts, tts.supported]);
+  }, [go, next, panel, paged, prev, toggleAuto, toggleTts, tts.supported]);
 
   // Tap: toggle controls, or (tap zones) scroll a screen from the sides.
   const onPageClick = (e: React.MouseEvent) => {
@@ -228,8 +284,7 @@ export function ReaderShell(props: Props) {
   const playing = auto.playing || tts.speaking;
   const sheetSide = isDesktop ? "right" : "bottom";
   const sheetClass = isDesktop ? "w-[380px] sm:max-w-[380px] gap-0" : "max-h-[85dvh] gap-0 rounded-t-xl";
-  const hiddenTop = !chrome && "pointer-events-none -translate-y-4 opacity-0";
-  const hiddenBottom = !chrome && "pointer-events-none translate-y-4 opacity-0";
+  const showBottom = chrome || playing;
 
   return (
     <div
@@ -237,68 +292,95 @@ export function ReaderShell(props: Props) {
       style={readerStyle(settings)}
       className="min-h-dvh bg-reader-bg text-reader-fg transition-colors"
     >
-      {/* Fades so the floating controls sit on a clean surface, not on top of text */}
-      <div
-        aria-hidden
-        className={cn("pointer-events-none fixed inset-x-0 top-0 z-30 h-32 bg-gradient-to-b from-reader-bg via-reader-bg/85 to-transparent transition-opacity duration-200", !chrome && "opacity-0")}
-      />
-      <div
-        aria-hidden
-        className={cn(
-          "pointer-events-none fixed inset-x-0 bottom-0 z-30 bg-gradient-to-t from-reader-bg via-reader-bg/90 to-transparent transition-all duration-200",
-          chrome ? "h-48" : playing ? "h-20" : "h-48 opacity-0",
-        )}
-      />
-
-      {/* ── Top controls ── */}
-      <div className={cn("fixed inset-x-0 top-0 z-40 flex items-start justify-between gap-2 p-3 transition-all duration-200", hiddenTop)} data-no-toggle>
-        <div className="flex flex-col gap-2">
-          <Link href={`/novels/${novel.slug}`} aria-label={`Back to ${novel.title}`} className={cn(pill, "flex size-10 items-center justify-center rounded-lg")}>
-            <ArrowLeft className="size-4" />
+      {/* ── Top bar ── */}
+      <header
+        className={cn("fixed inset-x-0 top-0 z-40 border-b transition-transform duration-200", bar, !chrome && "-translate-y-full")}
+        data-no-toggle
+      >
+        <div className="mx-auto flex h-14 max-w-3xl items-center gap-1 px-2">
+          <Link href={`/novels/${novel.slug}`} aria-label={`Back to ${novel.title}`} className={iconBtn}>
+            <ArrowLeft />
           </Link>
-          <Link href="/" aria-label="Home" className={cn(pill, "flex size-10 items-center justify-center rounded-lg")}>
-            <House className="size-4" />
-          </Link>
-        </div>
-        <button
-          type="button"
-          onClick={() => setPanel("chapters")}
-          className={cn(pill, "mt-0.5 min-w-0 max-w-[60vw] truncate rounded-lg px-3 py-2 text-sm font-medium")}
-          aria-label="Open chapter list"
-        >
-          {novel.title}
-        </button>
-        <div className="flex flex-col gap-2">
+          <div className="min-w-0 flex-1 px-1 leading-tight">
+            <p className="truncate text-sm font-semibold">{novel.title}</p>
+            <p className="truncate text-xs opacity-60">
+              Chapter {chapter.number}
+              {chapter.title && ` · ${chapter.title}`}
+            </p>
+          </div>
           <button
             type="button"
             onClick={toggleLibrary}
             disabled={libraryPending}
             aria-pressed={inLibrary}
             aria-label={inLibrary ? "Remove from library" : "Add to library"}
-            className={cn(pill, "flex size-10 items-center justify-center rounded-lg")}
+            className={iconBtn}
           >
-            {inLibrary ? <BookmarkCheck className="size-4 text-primary" /> : <BookmarkPlus className="size-4" />}
+            {inLibrary ? <BookmarkCheck className="text-primary" /> : <BookmarkPlus />}
+          </button>
+          <button type="button" onClick={() => setPanel("chapters")} aria-label="Chapters" className={iconBtn}>
+            <List />
           </button>
           {isDesktop && (
-            <button type="button" onClick={toggleFullscreen} aria-label={fullscreen ? "Exit full screen" : "Full screen"} className={cn(pill, "flex size-10 items-center justify-center rounded-lg")}>
-              {fullscreen ? <Shrink className="size-4" /> : <Expand className="size-4" />}
+            <button type="button" onClick={toggleFullscreen} aria-label={fullscreen ? "Exit full screen" : "Full screen"} className={iconBtn}>
+              {fullscreen ? <Shrink /> : <Expand />}
             </button>
           )}
+          <button type="button" onClick={() => setPanel("settings")} aria-label="Reader settings" className={iconBtn}>
+            <Type />
+          </button>
         </div>
-      </div>
+      </header>
 
       {/* ── Chapter ── */}
-      <main id="main" onClick={onPageClick} className={cn("pt-16", settings.font === "serif" ? "font-serif" : "font-sans")}>
-        <div data-paragraphs={settings.paragraphs} data-justify={settings.justify}>
-          {children}
-        </div>
-      </main>
+      {paged ? (
+        <main id="main" className={settings.font === "serif" ? "font-serif" : "font-sans"} data-paragraphs={settings.paragraphs} data-justify={settings.justify}>
+          <Pager
+            ref={pager}
+            animation={settings.pageTurn}
+            initialFraction={startAtEnd ? 1 : savedPosition}
+            layoutKey={`${settings.size}-${settings.leading}-${settings.width}-${settings.font}-${settings.paragraphs}-${settings.justify}`}
+            onProgress={onPagerProgress}
+            onToggleChrome={() => setChrome((c) => !c)}
+            onBeforeStart={toPrevChapterEnd}
+            onAfterEnd={afterLastPage}
+            endPage={
+              <div className="flex h-full flex-col items-center justify-center gap-4 px-4 text-center font-sans">
+                <p className="text-sm opacity-60">End of chapter {chapter.number}</p>
+                {nextItem ? (
+                  <button type="button" onClick={() => go(nextItem.number)} className="max-w-xs rounded-lg border border-current/15 px-5 py-4 hover:border-primary">
+                    <span className="block text-xs opacity-60">Up next</span>
+                    <span className="block font-medium">
+                      Chapter {nextItem.number}
+                      {nextItem.title && `: ${nextItem.title}`}
+                    </span>
+                  </button>
+                ) : (
+                  <p className="font-medium">You&apos;re all caught up.</p>
+                )}
+                <button type="button" onClick={() => setPanel("comments")} className="text-sm underline underline-offset-4 opacity-70 hover:opacity-100">
+                  Read the comments
+                </button>
+              </div>
+            }
+          >
+            {children}
+          </Pager>
+        </main>
+      ) : (
+        <>
+          <main id="main" onClick={onPageClick} className={cn("pt-14", settings.font === "serif" ? "font-serif" : "font-sans")}>
+            <div data-paragraphs={settings.paragraphs} data-justify={settings.justify}>
+              {children}
+            </div>
+          </main>
+          {footer}
+          <div className="h-40" aria-hidden />
+        </>
+      )}
 
-      {footer}
-      <div className="h-40" aria-hidden />
-
-      {showResume && (
-        <div className="fixed inset-x-0 bottom-40 z-40 flex justify-center px-4">
+      {showResume && !paged && (
+        <div className="fixed inset-x-0 bottom-32 z-40 flex justify-center px-4">
           <Button
             onClick={() => {
               scrollToFraction(savedPosition, "smooth");
@@ -311,120 +393,126 @@ export function ReaderShell(props: Props) {
         </div>
       )}
 
-      {/* ── Always-on indicators (bottom-left) ── */}
-      {(settings.showPercent || settings.showChapter) && !chrome && !playing && (
-        <div className="pointer-events-none fixed bottom-3 left-3 z-30 flex gap-1.5 text-xs tabular-nums" aria-hidden>
-          {settings.showPercent && <span className={cn(pill, "rounded-md px-2 py-1")}>{Math.round(progress * 100)}%</span>}
-          {settings.showChapter && (
-            <span className={cn(pill, "rounded-md px-2 py-1")}>
-              Ch. {chapterIndex + 1}/{toc.length || 1}
-            </span>
-          )}
-        </div>
+      {/* Quiet progress while the bars are hidden (scroll layout; paged shows page numbers) */}
+      {!chrome && !playing && (settings.showChapter || (!paged && settings.showPercent)) && (
+        <span className="pointer-events-none fixed right-3 bottom-2 z-30 font-sans text-xs tabular-nums opacity-45" aria-hidden>
+          {settings.showChapter && `Ch. ${chapterIndex + 1}/${toc.length || 1}`}
+          {settings.showChapter && !paged && settings.showPercent && " · "}
+          {!paged && settings.showPercent && `${Math.round(progress * 100)}%`}
+        </span>
       )}
 
-      {/* ── Now playing ── */}
-      {playing && (
-        <div className={cn("fixed inset-x-0 z-40 flex justify-center px-3 transition-all duration-200", chrome ? "bottom-[10.5rem]" : "bottom-3")} data-no-toggle>
-          <div className={cn(pill, "flex items-center gap-1 rounded-full py-1 pr-1 pl-3 text-sm")}>
-            {auto.playing ? (
-              <>
-                <span className="mr-1 text-xs opacity-70">{settings.autoStyle === "creep" ? "Auto-scroll" : "Page jump"}</span>
-                <button type="button" onClick={() => update({ speed: Math.max(0, settings.speed - 1) })} className="rounded-full px-2 py-1 hover:bg-current/10" aria-label="Slower">
-                  −
+      {/* ── Bottom bar ── */}
+      <footer
+        className={cn("fixed inset-x-0 bottom-0 z-40 border-t transition-transform duration-200", bar, !showBottom && "translate-y-full")}
+        data-no-toggle
+      >
+        <div className="mx-auto max-w-3xl px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          {playing && !chrome ? (
+            /* Mini player while auto-scroll or read-aloud runs */
+            <div className="flex h-11 items-center gap-2 text-sm">
+              {auto.playing ? (
+                <>
+                  <span className="min-w-0 flex-1 truncate opacity-70">{paged ? "Turning pages" : settings.autoStyle === "creep" ? "Auto-scrolling" : "Page jump"}</span>
+                  <button type="button" onClick={() => update({ speed: Math.max(0, settings.speed - 1) })} className={iconBtn} aria-label="Slower">
+                    <Minus />
+                  </button>
+                  <span className="w-7 text-center text-xs tabular-nums">{settings.speed + 1}×</span>
+                  <button type="button" onClick={() => update({ speed: Math.min(SCROLL_SPEEDS.length - 1, settings.speed + 1) })} className={iconBtn} aria-label="Faster">
+                    <Plus />
+                  </button>
+                  <button type="button" onClick={() => auto.setPlaying(false)} aria-label="Pause" className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Pause className="size-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Headphones className="size-4 shrink-0 text-primary" />
+                  <span className="min-w-0 flex-1 truncate opacity-70">Reading aloud</span>
+                  {TTS_RATES.map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => tts.setRate(r)}
+                      aria-pressed={tts.rate === r}
+                      className={cn("rounded-md px-1.5 py-1 text-xs tabular-nums", tts.rate === r ? "bg-primary/15 font-medium text-primary" : "opacity-60 hover:opacity-100")}
+                    >
+                      {r}×
+                    </button>
+                  ))}
+                  <button type="button" onClick={() => tts.stop()} aria-label="Stop reading aloud" className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Square className="size-3.5" />
+                  </button>
+                </>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 text-xs tabular-nums">
+                <span className="w-9 shrink-0 opacity-60">{Math.round(progress * 100)}%</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={1000}
+                  value={Math.round(progress * 1000)}
+                  onChange={(e) => seek(Number(e.target.value) / 1000)}
+                  aria-label="Position in chapter"
+                  aria-valuetext={`${Math.round(progress * 100)} percent`}
+                  className="reader-range min-w-0 flex-1"
+                  style={{ "--fill": `${progress * 100}%` } as React.CSSProperties}
+                />
+                <span className="shrink-0 text-right whitespace-nowrap opacity-60">{minutesLeft ? `${minutesLeft} min left` : "Done"}</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between">
+                <button type="button" onClick={() => go(prev)} disabled={!prev} aria-label="Previous chapter" className={iconBtn}>
+                  <ChevronLeft />
                 </button>
-                <span className="w-6 text-center text-xs tabular-nums">{settings.speed + 1}×</span>
+                <button type="button" onClick={() => setPanel("chapters")} className="flex h-10 min-w-0 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-[color-mix(in_oklch,var(--reader-fg)_8%,transparent)]">
+                  <span className="truncate">Ch. {chapter.number}</span>
+                  <ChevronDown className="size-4 shrink-0 opacity-60" />
+                </button>
                 <button
                   type="button"
-                  onClick={() => update({ speed: Math.min(SCROLL_SPEEDS.length - 1, settings.speed + 1) })}
-                  className="rounded-full px-2 py-1 hover:bg-current/10"
-                  aria-label="Faster"
+                  onClick={toggleAuto}
+                  aria-label={auto.playing ? "Pause auto-scroll" : "Start auto-scroll"}
+                  aria-pressed={auto.playing}
+                  className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
                 >
-                  +
+                  {auto.playing ? <Pause className="size-5" /> : <Play className="ml-0.5 size-5" />}
                 </button>
-                <button type="button" onClick={() => auto.setPlaying(false)} aria-label="Stop auto-scroll" className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  <Pause className="size-4" />
-                </button>
-              </>
-            ) : (
-              <>
-                <Headphones className="size-4 text-primary" />
-                <span className="mr-1 text-xs opacity-70">Reading aloud</span>
-                {TTS_RATES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => tts.setRate(r)}
-                    aria-pressed={tts.rate === r}
-                    className={cn("rounded-full px-1.5 py-1 text-xs tabular-nums", tts.rate === r ? "bg-current/15 font-medium" : "opacity-60 hover:opacity-100")}
-                  >
-                    {r}×
+                {tts.supported ? (
+                  <button type="button" onClick={toggleTts} aria-label={tts.speaking ? "Stop reading aloud" : "Read aloud"} aria-pressed={tts.speaking} className={cn(iconBtn, tts.speaking && "text-primary")}>
+                    <Headphones />
                   </button>
-                ))}
-                <button type="button" onClick={() => tts.stop()} aria-label="Stop reading aloud" className="ml-1 flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                  <Square className="size-3.5" />
+                ) : (
+                  <button type="button" onClick={() => (paged ? seek(0) : window.scrollTo({ top: 0, behavior: "smooth" }))} aria-label="Back to start" className={iconBtn}>
+                    <ArrowUpToLine />
+                  </button>
+                )}
+                <button type="button" onClick={() => setPanel("settings")} aria-label="Appearance" className={iconBtn}>
+                  <SlidersHorizontal />
                 </button>
-              </>
-            )}
-          </div>
+                <button type="button" onClick={() => go(next)} disabled={!next} aria-label="Next chapter" className={iconBtn}>
+                  <ChevronRight />
+                </button>
+              </div>
+            </>
+          )}
         </div>
-      )}
-
-      {/* ── Bottom controls ── */}
-      <div className={cn("fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-all duration-200", hiddenBottom)} data-no-toggle>
-        <div className="mx-auto flex max-w-md flex-col gap-2">
-          <div className="flex justify-end">
-            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="Scroll to top" className={cn(pill, "flex size-9 items-center justify-center rounded-lg")}>
-              <ArrowUpToLine className="size-4" />
-            </button>
-          </div>
-          {/* scrubber */}
-          <div className={cn(pill, "flex items-center gap-3 rounded-lg px-3 py-2 text-xs tabular-nums")}>
-            <span className="w-8 shrink-0 opacity-70">{Math.round(progress * 100)}%</span>
-            <input
-              type="range"
-              min={0}
-              max={1000}
-              value={Math.round(progress * 1000)}
-              onChange={(e) => scrollToFraction(Number(e.target.value) / 1000)}
-              aria-label="Position in chapter"
-              aria-valuetext={`${Math.round(progress * 100)} percent`}
-              className="reader-range min-w-0 flex-1"
-              style={{ "--fill": `${progress * 100}%` } as React.CSSProperties}
-            />
-            <span className="shrink-0 text-right whitespace-nowrap opacity-70">{minutesLeft ? `${minutesLeft} min left` : "Done"}</span>
-          </div>
-          {/* transport */}
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={toggleAuto}
-              aria-label={auto.playing ? "Pause auto-scroll" : "Start auto-scroll"}
-              aria-pressed={auto.playing}
-              className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_4px_16px_rgb(0_0_0/0.2)]"
-            >
-              {auto.playing ? <Pause className="size-4" /> : <Play className="ml-0.5 size-4" />}
-            </button>
-            <div className="flex min-w-0 items-center gap-2">
-              <button type="button" onClick={() => go(prev)} disabled={!prev} aria-label="Previous chapter" className={cn(pill, "flex size-10 shrink-0 items-center justify-center rounded-lg disabled:opacity-40")}>
-                <ChevronLeft className="size-4" />
-              </button>
-              <button type="button" onClick={() => setPanel("chapters")} className={cn(pill, "flex h-10 min-w-0 items-center gap-2 rounded-lg px-4 text-sm font-medium")}>
-                <span className="truncate">Chapter {chapter.number}</span>
-                <ChevronDown className="size-4 shrink-0 opacity-60" />
-              </button>
-              <button type="button" onClick={() => go(next)} disabled={!next} aria-label="Next chapter" className={cn(pill, "flex size-10 shrink-0 items-center justify-center rounded-lg disabled:opacity-40")}>
-                <ChevronRight className="size-4" />
-              </button>
-            </div>
-            <button type="button" onClick={() => setPanel("settings")} aria-label="Reader settings" className={cn(pill, "flex size-10 shrink-0 items-center justify-center rounded-lg")}>
-              <SlidersHorizontal className="size-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+      </footer>
 
       {/* ── Panels ── */}
+      {paged && (
+        <Sheet open={panel === "comments"} onOpenChange={(o) => setPanel(o ? "comments" : null)}>
+          <SheetContent side={sheetSide} className={cn(sheetClass, "flex flex-col overflow-y-auto")}>
+            <SheetHeader>
+              <SheetTitle>Chapter {chapter.number}</SheetTitle>
+              <SheetDescription>{novel.title}</SheetDescription>
+            </SheetHeader>
+            <div className="text-foreground">{footer}</div>
+          </SheetContent>
+        </Sheet>
+      )}
       <Sheet open={panel === "chapters"} onOpenChange={(o) => setPanel(o ? "chapters" : null)}>
         <SheetContent side={sheetSide} className={cn(sheetClass, "flex flex-col")}>
           <SheetHeader>

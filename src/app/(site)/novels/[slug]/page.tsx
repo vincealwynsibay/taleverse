@@ -12,6 +12,7 @@ import { LibraryButton } from "@/components/novel/LibraryButton";
 import { ReviewForm, ReviewList, SignInToReview } from "@/components/novel/Reviews";
 import { EmptyState, Section } from "@/components/Section";
 import { Button } from "@/components/ui/button";
+import type { ArtCredit } from "@/lib/seed";
 
 export async function generateMetadata({ params }: PageProps<"/novels/[slug]">): Promise<Metadata> {
   const novel = await getNovel((await params).slug);
@@ -43,6 +44,13 @@ export default async function NovelPage({ params, searchParams }: PageProps<"/no
   ]);
 
   const resume = state.progress?.chapter.number;
+  const credits: ArtCredit[] = (() => {
+    try {
+      return novel.artCredit ? JSON.parse(novel.artCredit) : [];
+    } catch {
+      return [];
+    }
+  })();
   const startNumber = resume ?? state.firstChapter;
   const listHref = (patch: { page?: number; order?: string }) => {
     const qs = new URLSearchParams();
@@ -76,12 +84,15 @@ export default async function NovelPage({ params, searchParams }: PageProps<"/no
       {/* ── Banner hero ── */}
       <section className="relative overflow-hidden rounded-lg border">
         <div aria-hidden className="absolute inset-0">
-          {novel.coverUrl ? (
+          {novel.bannerUrl ? (
+            <Image src={novel.bannerUrl} alt="" fill priority sizes="(max-width: 1200px) 100vw, 1200px" className="object-cover object-center opacity-70" />
+          ) : novel.coverUrl ? (
             <Image src={novel.coverUrl} alt="" fill sizes="100vw" className="scale-110 object-cover opacity-60 blur-2xl" />
           ) : (
             <div className="h-full w-full" style={{ background: `linear-gradient(120deg, oklch(0.42 0.09 ${novel.coverHue}), oklch(0.22 0.04 ${novel.coverHue}))` }} />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background/70 to-transparent" />
         </div>
         <div className="relative grid gap-6 p-5 pt-24 sm:grid-cols-[160px_1fr] sm:p-6 sm:pt-28">
           <NovelCover title={novel.title} author={novel.author} coverUrl={novel.coverUrl} hue={novel.coverHue} size="lg" priority className="w-36 shadow-2xl sm:w-full" />
@@ -249,6 +260,21 @@ export default async function NovelPage({ params, searchParams }: PageProps<"/no
               ))}
             </div>
           </div>
+          {credits.length > 0 && (
+            <div>
+              <h2 className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">Art</h2>
+              <ul className="space-y-1.5 text-xs text-muted-foreground">
+                {credits.map((c) => (
+                  <li key={c.role}>
+                    <span className="text-foreground">{c.role}:</span> {c.label}.{" "}
+                    <a href={c.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">
+                      {c.license}, Wikimedia Commons
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           {similar.length > 0 && (
             <Section title="Similar novels">
               <ul className="space-y-3">

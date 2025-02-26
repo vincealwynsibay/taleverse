@@ -9,6 +9,7 @@ import { NovelCover } from "@/components/NovelCover";
 import { NovelCard } from "@/components/novel/NovelCard";
 import { Chip, Section } from "@/components/Section";
 import { DemoButtons } from "@/components/site/DemoButtons";
+import { Spotlight } from "@/components/home/Spotlight";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 
@@ -22,7 +23,9 @@ export default async function HomePage() {
   const collage = home.popular.slice(0, 3);
 
   return (
-    <div className="container-page space-y-12 py-8">
+    <div className="container-page space-y-12 py-6">
+      <Spotlight novels={home.featured} />
+
       {home.continueReading.length > 0 && (
         <Section title="Continue reading" href="/library">
           <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -191,11 +194,11 @@ export default async function HomePage() {
       )}
 
       <Section
-        title="Top rated"
-        href="/novels?sort=rating"
+        title="Completed"
+        href="/novels?status=COMPLETED"
         aside={
-          <Chip href="/novels?sort=rating">
-            <Flame className="size-3" /> Readers&apos; picks
+          <Chip href="/novels?status=COMPLETED&sort=rating">
+            <Flame className="size-3" /> Binge the whole thing
           </Chip>
         }
       >

@@ -1,0 +1,206 @@
+{
+  "dracula": {
+    "cover": {
+      "label": "1897 first-edition cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ADracula_1st_ed_cover_reproduction.jpg"
+    },
+    "banner": {
+      "label": "1901 Constable paperback cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ADracula_Archibald_Constable_and_Company_1901.jpg"
+    }
+  },
+  "pride-and-prejudice": {
+    "cover": {
+      "label": "1894 “peacock” edition, illustrated by Hugh Thomson",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3APp1894-000-00.jpg"
+    },
+    "banner": {
+      "label": "Hugh Thomson, 1894",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AHoughton_Typ_805.94.8320_-_Pride_and_Prejudice%2C_1894%2C_Hugh_Thomson_-_superior_dancing.jpg"
+    }
+  },
+  "frankenstein": {
+    "cover": {
+      "label": "Frontispiece to the 1831 edition, Theodor von Holst",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AFrankenstein_engraved.jpg"
+    },
+    "banner": {
+      "label": "Theodor von Holst, 1831",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AFrankenstein_engraved.jpg"
+    }
+  },
+  "the-adventures-of-sherlock-holmes": {
+    "cover": {
+      "label": "1892 first-edition cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AAdventures_of_sherlock_holmes.jpg"
+    },
+    "banner": {
+      "label": "Sidney Paget, The Strand Magazine",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ASherlock-holmes-1893-sidney-paget.jpg"
+    }
+  },
+  "treasure-island": {
+    "cover": {
+      "label": "1911 Scribner's edition, N. C. Wyeth",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ATreasure_Island-Scribner's-1911.jpg"
+    },
+    "banner": {
+      "label": "Stevenson's treasure map, 1883",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ATreasure-Island-map.jpg"
+    }
+  },
+  "the-time-machine": {
+    "cover": {
+      "label": "1895 Heinemann first-edition cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AThe_Time_Machine_(Heinemann_text)_-_front_cover.jpg"
+    },
+    "banner": {
+      "label": "1895 Heinemann first-edition cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AThe_Time_Machine_(Heinemann_text)_-_front_cover.jpg"
+    }
+  },
+  "alices-adventures-in-wonderland": {
+    "cover": {
+      "label": "1865 first-edition cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AAlice's_Adventures_in_Wonderland_cover_(1865).jpg"
+    },
+    "banner": {
+      "label": "John Tenniel, the Mad Tea-Party (coloured)",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AJohn_Tenniel-_Alice's_mad_tea_party%2C_colour.jpg"
+    }
+  },
+  "the-great-gatsby": {
+    "cover": {
+      "label": "1925 first-edition cover, Francis Cugat",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AThe_Great_Gatsby_Cover_1925_Retouched.jpg"
+    },
+    "banner": {
+      "label": "1925 first-edition cover, Francis Cugat",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AThe_Great_Gatsby_Cover_1925_Retouched.jpg"
+    }
+  },
+  "moby-dick": {
+    "cover": {
+      "label": "“The final chase”, I. W. Taber, 1902",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AMoby_Dick_final_chase.jpg"
+    },
+    "banner": {
+      "label": "Boats attacking whales, Thomas Beale, 1839",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AThomas_Beale_-_Boats_attacking_whales.jpg"
+    }
+  },
+  "the-picture-of-dorian-gray": {
+    "cover": {
+      "label": "Lippincott's Monthly Magazine, July 1890",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ALippincott_doriangray.jpg"
+    },
+    "banner": {
+      "label": "Lippincott's Monthly Magazine, July 1890",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ALippincott_doriangray.jpg"
+    }
+  },
+  "jane-eyre": {
+    "cover": {
+      "label": "Cover of an early edition (Project Gutenberg)",
+      "license": "Public domain",
+      "source": "https://www.gutenberg.org/ebooks/1260"
+    },
+    "banner": {
+      "label": "Cover of an early edition (Project Gutenberg)",
+      "license": "Public domain",
+      "source": "https://www.gutenberg.org/ebooks/1260"
+    }
+  },
+  "the-war-of-the-worlds": {
+    "cover": {
+      "label": "Henrique Alvim Corrêa, 1906 edition poster",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AThe_War_of_the_Worlds_-_poster_by_Henrique_Alvim_Corr%C3%AAa%2C_original_graphic.jpg"
+    },
+    "banner": {
+      "label": "Henrique Alvim Corrêa, 1906",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AThe_War_of_the_Worlds_by_Henrique_Alvim_Corr%C3%AAa%2C_original_graphic_15.jpg"
+    }
+  },
+  "the-hound-of-the-baskervilles": {
+    "cover": {
+      "label": "1902 first-edition cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ACover_(Hound_of_Baskervilles%2C_1902).jpg"
+    },
+    "banner": {
+      "label": "Sidney Paget, The Strand Magazine, 1901",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AHoun-53_-_The_coal-black_Hound_(Hound_of_Baskervilles).jpg"
+    }
+  },
+  "dr-jekyll-and-mr-hyde": {
+    "cover": {
+      "label": "1886 first-edition cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AStrange_Case_of_Dr_Jekyll_and_Mr_Hyde_001.jpg"
+    },
+    "banner": {
+      "label": "Theatre poster, c. 1880s (Library of Congress)",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3ADr._Jekyll_and_Mr._Hyde_LCCN2014635954.jpg"
+    }
+  },
+  "the-wonderful-wizard-of-oz": {
+    "cover": {
+      "label": "1900 first-edition cover, W. W. Denslow",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3AThe_Wonderful_Wizard_of_Oz_-_W.W._Denslow_cover_(back).jpg"
+    },
+    "banner": {
+      "label": "1900 first-edition cover, W. W. Denslow (Project Gutenberg)",
+      "license": "Public domain",
+      "source": "https://www.gutenberg.org/ebooks/55"
+    }
+  },
+  "peter-pan": {
+    "cover": {
+      "label": "Peter and Wendy, 1911 cover",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3APeter_and_Wendy_(1911)%2C_cover.jpg"
+    },
+    "banner": {
+      "label": "F. D. Bedford, 1911",
+      "license": "Public domain",
+      "source": "https://commons.wikimedia.org/wiki/File%3APeter_pan_1911_pipes.jpg"
+    }
+  },
+  "the-call-of-the-wild": {
+    "cover": {
+      "label": "1903 first-edition cover (Project Gutenberg)",
+      "license": "Public domain",
+      "source": "https://www.gutenberg.org/ebooks/215"
+    },
+    "banner": {
+      "label": "1903 first-edition cover (Project Gutenberg)",
+      "license": "Public domain",
+      "source": "https://www.gutenberg.org/ebooks/215"
+    }
+  }
+}

@@ -14,6 +14,13 @@ export type BookConfig = {
   sectionBreak?: RegExp;
   /** Segments shorter than this are tables of contents or front matter. */
   minWords?: number;
+  /**
+   * The book repeats its headings in a table of contents: when the same heading
+   * line appears twice, keep only the later (real) one.
+   */
+  dedupe?: boolean;
+  /** The whole text is indented by this many spaces (strip it before parsing). */
+  indent?: number;
 };
 
 export type SplitChapter = { title: string; paragraphs: string[] };
@@ -94,12 +101,23 @@ function toParagraphs(lines: string[], cfg: BookConfig): string[] {
 }
 
 export function splitBook(raw: string, cfg: BookConfig): SplitChapter[] {
-  const lines = stripBoilerplate(raw).split("\n");
+  const strip = cfg.indent ? new RegExp(`^ {1,${cfg.indent}}`) : null;
+  const lines = stripBoilerplate(raw)
+    .split("\n")
+    .map((l) => (strip ? l.replace(strip, "") : l));
   const marks: { line: number; inlineTitle?: string }[] = [];
   lines.forEach((l, i) => {
     const m = l.trim().match(cfg.heading);
-    if (m) marks.push({ line: i, inlineTitle: m[1]?.trim() });
+    // Inline title: whichever capture group matched (alternations can use several).
+    if (m) marks.push({ line: i, inlineTitle: m.slice(1).find(Boolean)?.trim() });
   });
+  if (cfg.dedupe) {
+    const lastIndex = new Map<string, number>();
+    marks.forEach((m, i) => lastIndex.set(lines[m.line].trim(), i));
+    for (let i = marks.length - 1; i >= 0; i--) {
+      if (lastIndex.get(lines[marks[i].line].trim()) !== i) marks.splice(i, 1);
+    }
+  }
 
   const chapters: SplitChapter[] = [];
   marks.forEach((mark, idx) => {
@@ -107,7 +125,7 @@ export function splitBook(raw: string, cfg: BookConfig): SplitChapter[] {
     const bodyEnd = idx + 1 < marks.length ? marks[idx + 1].line : lines.length;
     let title = mark.inlineTitle ? titleCase(mark.inlineTitle) : "";
 
-    if (cfg.subtitles) {
+    if (cfg.subtitles && !title) {
       // First non-empty line within the next 3, if it's a short one-line paragraph.
       for (let j = bodyStart; j < Math.min(bodyStart + 3, bodyEnd); j++) {
         const t = lines[j].trim();

@@ -45,8 +45,8 @@ export const getGenres = cache(() =>
 
 export async function getHomeData(viewer: Viewer | null) {
   const now = new Date();
-  const [popular, recent, topRated, upcoming, continueReading, comments, topRatedCards] = await Promise.all([
-    db.novel.findMany({ select: novelCardSelect, orderBy: { views: "desc" }, take: 6 }),
+  const [popular, recent, topRated, upcoming, continueReading, comments, topRatedCards, featured] = await Promise.all([
+    db.novel.findMany({ select: novelCardSelect, orderBy: { views: "desc" }, take: 12 }),
     db.chapter.findMany({
       where: published(now),
       orderBy: { publishedAt: "desc" },
@@ -83,7 +83,14 @@ export async function getHomeData(viewer: Viewer | null) {
         chapter: { select: { number: true, novel: { select: { slug: true, title: true } } } },
       },
     }),
-    db.novel.findMany({ select: novelCardSelect, orderBy: [{ ratingAvg: "desc" }, { ratingCount: "desc" }], take: 6 }),
+    db.novel.findMany({ where: { status: "COMPLETED" }, select: novelCardSelect, orderBy: [{ ratingAvg: "desc" }, { views: "desc" }], take: 6 }),
+    // Spotlight: popular novels that have banner art.
+    db.novel.findMany({
+      where: { bannerUrl: { not: null } },
+      select: { ...novelCardSelect, bannerUrl: true },
+      orderBy: { views: "desc" },
+      take: 5,
+    }),
   ]);
 
   // "Latest updates", web-novel style: one row per novel with its newest chapters.
@@ -102,6 +109,7 @@ export async function getHomeData(viewer: Viewer | null) {
     continueReading,
     comments,
     topRatedCards: await withChapterCounts(topRatedCards, now),
+    featured: await withChapterCounts(featured, now),
   };
 }
 
@@ -164,7 +172,7 @@ export async function searchNovels(q: string) {
 // ─── Novel page ──────────────────────────────────────────────────────────────
 
 export const getNovel = cache(async (slug: string) =>
-  db.novel.findUnique({ where: { slug }, select: { ...novelCardSelect, releaseYear: true, createdAt: true } }),
+  db.novel.findUnique({ where: { slug }, select: { ...novelCardSelect, releaseYear: true, createdAt: true, bannerUrl: true, artCredit: true } }),
 );
 
 export async function getNovelViewerState(novelId: number, viewer: Viewer | null) {

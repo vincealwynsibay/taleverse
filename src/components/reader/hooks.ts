@@ -37,7 +37,7 @@ export function scrollToFraction(f: number, behavior: ScrollBehavior = "auto") {
  * most of a screen at a time, at an interval that matches the same reading
  * speed. Stops when the reader touches the page or the chapter ends.
  */
-export function useAutoScroll(pxPerSecond: number, style: "creep" | "jump") {
+export function useAutoScroll(pxPerSecond: number, style: "creep" | "jump", enabled = true) {
   const [playing, setPlaying] = useState(false);
   const speed = useRef(pxPerSecond);
   useEffect(() => {
@@ -45,7 +45,7 @@ export function useAutoScroll(pxPerSecond: number, style: "creep" | "jump") {
   }, [pxPerSecond]);
 
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || !enabled) return;
     let raf = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const atEnd = () => chapterFraction() >= 0.999;
@@ -84,7 +84,7 @@ export function useAutoScroll(pxPerSecond: number, style: "creep" | "jump") {
       window.removeEventListener("wheel", stop);
       window.removeEventListener("touchstart", stop);
     };
-  }, [playing, style]);
+  }, [playing, style, enabled]);
 
   return { playing, setPlaying, toggle: useCallback(() => setPlaying((p) => !p), []) };
 }
@@ -117,7 +117,7 @@ function createSpeaker(onChange: (speaking: boolean) => void) {
     current = i;
     clearMark();
     els[i].setAttribute("data-speaking", "");
-    els[i].scrollIntoView({ block: "center", behavior: "smooth" });
+    window.dispatchEvent(new CustomEvent<HTMLElement>("reader:reveal", { detail: els[i] }));
     const u = new SpeechSynthesisUtterance(els[i].textContent!.trim());
     u.rate = rate;
     u.onend = () => active && speak(i + 1);

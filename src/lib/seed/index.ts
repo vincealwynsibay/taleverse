@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Db } from "../db";
@@ -19,6 +20,22 @@ export const creditPacks = [
   { id: 3, name: "Library", credits: 150, priceCents: 999, highlight: false },
 ];
 
+type ArtEntry = { label: string; license: string; source: string };
+type ArtFile = Record<string, { cover: ArtEntry; banner: ArtEntry }>;
+
+/** Credits for public-domain art in public/covers and public/banners. */
+export type ArtCredit = { role: "Cover" | "Banner"; label: string; license: string; url: string };
+
+async function loadArt(): Promise<ArtFile> {
+  try {
+    return JSON.parse(await readFile(path.join(process.cwd(), "prisma", "seed-data", "art.json"), "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+const publicFile = (rel: string) => (existsSync(path.join(process.cwd(), "public", rel)) ? `/${rel}` : null);
+
 async function loadSeedFile(slug: string): Promise<SeedFile> {
   const file = path.join(process.cwd(), "prisma", "seed-data", `${slug}.json`);
   return JSON.parse(await readFile(file, "utf8"));
@@ -35,8 +52,20 @@ export async function seedCatalog(db: Db, { now = new Date(), log = console.log 
     await db.genre.upsert({ where: { slug: slugify(name) }, update: { name }, create: { name, slug: slugify(name) } });
   }
 
+  const art = await loadArt();
   for (const book of catalog) {
     const data = await loadSeedFile(book.slug);
+    const coverUrl = publicFile(`covers/${book.slug}.jpg`);
+    const bannerUrl = publicFile(`banners/${book.slug}.jpg`);
+    const a = art[book.slug];
+    const credits: ArtCredit[] = a
+      ? [
+          ...(coverUrl ? [{ role: "Cover" as const, label: a.cover.label, license: a.cover.license, url: a.cover.source }] : []),
+          ...(bannerUrl && a.banner.source !== a.cover.source
+            ? [{ role: "Banner" as const, label: a.banner.label, license: a.banner.license, url: a.banner.source }]
+            : []),
+        ]
+      : [];
     const fields = {
       title: book.title,
       author: book.author,
@@ -46,11 +75,14 @@ export async function seedCatalog(db: Db, { now = new Date(), log = console.log 
       status: book.schedule === "complete" ? ("COMPLETED" as const) : ("ONGOING" as const),
       isSeed: true,
       views: seedViews[book.slug] ?? 0,
+      coverUrl,
+      bannerUrl,
+      artCredit: credits.length ? JSON.stringify(credits) : null,
       genres: { set: book.genres.map((g) => ({ slug: slugify(g) })) },
     };
     const novel = await db.novel.upsert({
       where: { slug: book.slug },
-      update: { ...fields, coverUrl: null },
+      update: fields,
       create: { ...fields, slug: book.slug, genres: { connect: fields.genres.set } },
     });
 

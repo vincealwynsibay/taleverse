@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createClient } from "../db";
 import { getBalance, unlockChapter } from "../credits";
 import { DEMO_STARTING_CREDITS, prepareDemoUser, resetDemo } from ".";
+import { catalog } from "./catalog";
 import { TEST_DATABASE_URL } from "@/test/global-setup";
 
 const db = createClient(TEST_DATABASE_URL);
@@ -16,12 +17,13 @@ beforeAll(async () => {
 
 describe("resetDemo", () => {
   it("seeds the whole catalogue with live early-access chapters", async () => {
-    expect(await db.novel.count()).toBe(7);
+    expect(await db.novel.count()).toBe(catalog.length);
+    const ongoing = catalog.filter((b) => b.schedule === "ongoing").length;
     const now = new Date();
     const early = await db.chapter.count({ where: { publishedAt: { lte: now }, freeAt: { gt: now } } });
     const scheduled = await db.chapter.count({ where: { publishedAt: { gt: now } } });
-    expect(early).toBe(12); // 4 ongoing novels × 3
-    expect(scheduled).toBe(8); // 4 ongoing novels × 2
+    expect(early).toBe(ongoing * 3);
+    expect(scheduled).toBe(ongoing * 2);
   });
 
   it("restores demo accounts and removes admin-made content, but keeps real users' data", async () => {

@@ -41,6 +41,40 @@ export const seedReviews: Record<string, { by: ReaderKey; rating: number; body: 
     { by: "tobias", rating: 4, body: "Short, strange and way ahead of its time. The Morlock chapters are genuinely creepy." },
     { by: "jun", rating: 5, body: "The far-future beach scene near the end is haunting. Finished it in one night." },
   ],
+  "the-great-gatsby": [
+    { by: "priya", rating: 5, body: "Every sentence is gorgeous. The last page wrecked me." },
+    { by: "jun", rating: 4, body: "Short enough to read in a weekend, sad enough to think about for a month." },
+  ],
+  "moby-dick": [
+    { by: "owen", rating: 4, body: "Yes, there's a whole chapter on rope. Read it anyway. Ahab is unforgettable." },
+  ],
+  "the-picture-of-dorian-gray": [
+    { by: "nadia", rating: 5, body: "Lord Henry gets all the best lines. Deliciously wicked." },
+    { by: "tobias", rating: 4, body: "The portrait reveal scenes are genuinely creepy." },
+  ],
+  "jane-eyre": [
+    { by: "marisol", rating: 5, body: "Jane is the original no-nonsense heroine. That proposal scene in the garden!" },
+    { by: "priya", rating: 4, body: "Slow start at Lowood, then I couldn't put it down." },
+  ],
+  "the-war-of-the-worlds": [
+    { by: "jun", rating: 5, body: "The heat-ray scene on Horsell Common is still terrifying 125 years later." },
+  ],
+  "the-hound-of-the-baskervilles": [
+    { by: "owen", rating: 5, body: "The best Holmes novel. Dartmoor in the fog is a whole mood." },
+    { by: "tobias", rating: 5, body: "Watson gets to be the detective for a while and he's great at it." },
+  ],
+  "dr-jekyll-and-mr-hyde": [
+    { by: "nadia", rating: 4, body: "Shorter and stranger than I expected. The final statement is chilling." },
+  ],
+  "the-wonderful-wizard-of-oz": [
+    { by: "marisol", rating: 4, body: "Darker and funnier than the film. Silver shoes, not ruby!" },
+  ],
+  "peter-pan": [
+    { by: "priya", rating: 5, body: "Much more bittersweet than I remembered. The narrator is hilarious." },
+  ],
+  "the-call-of-the-wild": [
+    { by: "owen", rating: 5, body: "Told from a dog's point of view and somehow one of the toughest books I've read." },
+  ],
   "alices-adventures-in-wonderland": [
     { by: "marisol", rating: 5, body: "Pure delightful nonsense. The Mad Tea-Party never gets old." },
     { by: "priya", rating: 4, body: "Funnier than I remembered from childhood. The wordplay is the real star." },
@@ -71,4 +105,14 @@ export const seedViews: Record<string, number> = {
   "treasure-island": 27150,
   "the-time-machine": 19870,
   "alices-adventures-in-wonderland": 24630,
+  "the-great-gatsby": 58720,
+  "moby-dick": 21480,
+  "the-picture-of-dorian-gray": 39910,
+  "jane-eyre": 44350,
+  "the-war-of-the-worlds": 31260,
+  "the-hound-of-the-baskervilles": 46890,
+  "dr-jekyll-and-mr-hyde": 29540,
+  "the-wonderful-wizard-of-oz": 26770,
+  "peter-pan": 22310,
+  "the-call-of-the-wild": 18940,
 };
