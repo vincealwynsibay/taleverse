@@ -1,38 +1,38 @@
 import Link from "next/link";
-import { BookOpenText } from "lucide-react";
+import { Eye, Star } from "lucide-react";
 import { NovelCover } from "@/components/NovelCover";
 import { RatingStars } from "@/components/RatingStars";
 import type { NovelCardData } from "@/lib/queries";
-import { cn } from "@/lib/utils";
+import { cn, formatCompact } from "@/lib/utils";
 
+/** Cover with chikari-style badges (genre · rating · reads) and the title underneath. */
 export function NovelCard({ novel, className, priority }: { novel: NovelCardData; className?: string; priority?: boolean }) {
   return (
-    <Link href={`/novels/${novel.slug}`} className={cn("group flex flex-col gap-3", className)}>
-      <NovelCover
-        title={novel.title}
-        author={novel.author}
-        coverUrl={novel.coverUrl}
-        hue={novel.coverHue}
-        priority={priority}
-        className="w-full transition-opacity group-hover:opacity-90"
-      />
-      <div className="space-y-1">
-        <h3 className="line-clamp-2 text-sm leading-snug font-medium group-hover:text-primary">{novel.title}</h3>
-        <p className="truncate text-xs text-muted-foreground">{novel.author}</p>
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+    <Link href={`/novels/${novel.slug}`} className={cn("group flex flex-col gap-2", className)}>
+      <div className="relative overflow-hidden rounded-md">
+        <NovelCover
+          title={novel.title}
+          author={novel.author}
+          coverUrl={novel.coverUrl}
+          hue={novel.coverHue}
+          priority={priority}
+          className="w-full transition-transform duration-300 group-hover:scale-[1.03]"
+        />
+        <div className="absolute inset-x-0 bottom-0 flex items-center gap-1 bg-gradient-to-t from-black/85 to-transparent px-1.5 pt-6 pb-1.5 text-[0.65rem] font-medium text-white">
+          {novel.genres[0] && <span className="rounded-sm bg-primary px-1 py-px text-primary-foreground">{novel.genres[0].name}</span>}
           {novel.ratingCount > 0 && (
-            <span className="flex items-center gap-1">
-              <RatingStars value={novel.ratingAvg} size={12} />
-              <span className="tabular-nums">{novel.ratingAvg.toFixed(1)}</span>
+            <span className="flex items-center gap-0.5 rounded-sm bg-black/50 px-1 py-px tabular-nums">
+              <Star className="size-2.5 fill-amber-400 text-amber-400" aria-hidden />
+              {novel.ratingAvg.toFixed(1)}
             </span>
           )}
-          {novel.chapterCount !== undefined && (
-            <span className="flex items-center gap-1 tabular-nums">
-              <BookOpenText className="size-3.5" aria-hidden /> {novel.chapterCount}
-            </span>
-          )}
+          <span className="flex items-center gap-0.5 rounded-sm bg-black/50 px-1 py-px tabular-nums">
+            <Eye className="size-2.5" aria-hidden />
+            {formatCompact(novel.views)}
+          </span>
         </div>
       </div>
+      <h3 className="line-clamp-2 text-sm leading-snug group-hover:text-primary">{novel.title}</h3>
     </Link>
   );
 }

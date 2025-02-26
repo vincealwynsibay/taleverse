@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { authEnabled } from "@/lib/flags";
 import { DemoButtons } from "./DemoButtons";
 import { SearchBox } from "./SearchBox";
@@ -77,9 +77,12 @@ export function UserMenu({ viewer }: { viewer: NonNullable<HeaderViewer> }) {
   );
 }
 
-export function MobileNav({ viewer }: { viewer: HeaderViewer }) {
+/** The ☰ menu next to the logo: navigation, genres, and the demo for guests. */
+export function MenuSheet({ viewer, genres }: { viewer: HeaderViewer; genres: { name: string; slug: string }[] }) {
   const links = [
-    { href: "/novels", label: "Browse" },
+    { href: "/", label: "Home" },
+    { href: "/novels", label: "Browse all" },
+    { href: "/novels?sort=rating", label: "Top rated" },
     { href: "/schedule", label: "Release schedule" },
     ...(viewer ? [{ href: "/library", label: "Library" }, { href: "/credits", label: "Credits" }] : []),
     ...(viewer?.isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
@@ -87,52 +90,47 @@ export function MobileNav({ viewer }: { viewer: HeaderViewer }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+        <Button variant="ghost" size="icon" aria-label="Open menu">
           <Menu />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[85vw] max-w-sm">
+      <SheetContent side="left" className="w-[85vw] max-w-xs gap-0 overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="text-xl">Taleverse</SheetTitle>
+          <SheetTitle className="text-lg font-bold">
+            tale<span className="text-primary">verse</span>
+          </SheetTitle>
         </SheetHeader>
-        <div className="flex flex-col gap-6 px-4">
-          <SearchBox />
-          <nav className="flex flex-col gap-1">
+        <div className="flex flex-col gap-6 px-4 pb-6">
+          <SearchBox className="md:hidden" />
+          <nav className="flex flex-col">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="rounded-md px-2 py-2 text-base hover:bg-accent">
-                {l.label}
-              </Link>
+              <SheetClose asChild key={l.href}>
+                <Link href={l.href} className="rounded-md px-2 py-2 text-sm hover:bg-accent">
+                  {l.label}
+                </Link>
+              </SheetClose>
             ))}
           </nav>
+          <div>
+            <p className="mb-2 px-2 text-xs font-medium text-muted-foreground">Genres</p>
+            <div className="flex flex-wrap gap-1.5 px-2">
+              {genres.map((g) => (
+                <SheetClose asChild key={g.slug}>
+                  <Link href={`/genres/${g.slug}`} className="rounded-md border px-2 py-1 text-xs hover:border-primary hover:text-primary">
+                    {g.name}
+                  </Link>
+                </SheetClose>
+              ))}
+            </div>
+          </div>
           {!viewer && (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">No sign-up needed: jump in with a demo account.</p>
+            <div className="space-y-3 rounded-md border bg-muted/40 p-3">
+              <p className="text-sm text-muted-foreground">No sign-up needed: use a shared demo account.</p>
               <DemoButtons layout="stack" />
-              <Button asChild variant="link" className="px-0">
-                <Link href="/sign-in">Sign in with your own account</Link>
-              </Button>
             </div>
           )}
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-
-export function DemoMenu() {
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="hidden sm:inline-flex">
-          Try the demo
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-72 p-3">
-        <p className="mb-3 text-sm text-muted-foreground">
-          Shared demo accounts, reset nightly. The reader starts with 25 credits; the admin can edit and schedule chapters.
-        </p>
-        <DemoButtons layout="stack" />
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }

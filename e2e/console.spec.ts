@@ -28,6 +28,10 @@ for (const [persona, path] of pages) {
     page.on("console", (m) => {
       if (m.type() === "error" && !ignored.some((r) => r.test(m.text()))) errors.push(m.text());
     });
+    // Name the failing URL, since the console message alone doesn't.
+    page.on("response", (r) => {
+      if (r.status() >= 400) errors.push(`${r.status()} ${new URL(r.url()).pathname}`);
+    });
     await page.goto(path, { waitUntil: "networkidle" });
     await page.waitForTimeout(1500); // hydration finishes after network idle
     expect(errors).toEqual([]);

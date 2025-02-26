@@ -11,7 +11,7 @@ export const ogSize = { width: 1200, height: 630 };
 export async function ogCard({ eyebrow, title, subtitle, hue, meta }: { eyebrow: string; title: string; subtitle?: string; hue: number; meta?: string[] }) {
   return new ImageResponse(
     (
-      <div style={{ display: "flex", width: "100%", height: "100%", background: "#0f0f0f", color: "#fafafa", padding: 64, gap: 56 }}>
+      <div style={{ display: "flex", width: "100%", height: "100%", background: "#14161c", color: "#eef0f4", padding: 64, gap: 56 }}>
         <div
           style={{
             display: "flex",
@@ -33,12 +33,12 @@ export async function ogCard({ eyebrow, title, subtitle, hue, meta }: { eyebrow:
           {subtitle && <div style={{ fontSize: 18, opacity: 0.85 }}>{subtitle}</div>}
         </div>
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, gap: 20 }}>
-          <div style={{ fontSize: 26, color: "#2dd4bf" }}>{eyebrow}</div>
+          <div style={{ fontSize: 26, color: "#6ea8fe" }}>{eyebrow}</div>
           <div style={{ fontSize: 68, lineHeight: 1.02, fontFamily: "Geist", letterSpacing: -2 }}>{title}</div>
-          {subtitle && <div style={{ fontSize: 32, color: "#a3a3a3" }}>{subtitle}</div>}
-          {meta && meta.length > 0 && <div style={{ display: "flex", gap: 28, fontSize: 26, color: "#a3a3a3", marginTop: 12 }}>{meta.map((m) => <div key={m}>{m}</div>)}</div>}
+          {subtitle && <div style={{ fontSize: 32, color: "#9aa3b2" }}>{subtitle}</div>}
+          {meta && meta.length > 0 && <div style={{ display: "flex", gap: 28, fontSize: 26, color: "#9aa3b2", marginTop: 12 }}>{meta.map((m) => <div key={m}>{m}</div>)}</div>}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 36, fontSize: 30, fontFamily: "Geist" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: "#0d9488" }} />
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: "#3b82f6" }} />
             Taleverse
           </div>
         </div>

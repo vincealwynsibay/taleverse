@@ -45,7 +45,7 @@ export const getGenres = cache(() =>
 
 export async function getHomeData(viewer: Viewer | null) {
   const now = new Date();
-  const [popular, recent, topRated, upcoming, continueReading] = await Promise.all([
+  const [popular, recent, topRated, upcoming, continueReading, comments, topRatedCards] = await Promise.all([
     db.novel.findMany({ select: novelCardSelect, orderBy: { views: "desc" }, take: 6 }),
     db.chapter.findMany({
       where: published(now),
@@ -72,6 +72,18 @@ export async function getHomeData(viewer: Viewer | null) {
       select: { id: true, number: true, publishedAt: true, novel: { select: { slug: true, title: true } } },
     }),
     viewer ? getContinueReading(viewer.id, 4) : Promise.resolve([]),
+    db.comment.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        body: true,
+        createdAt: true,
+        user: { select: { username: true } },
+        chapter: { select: { number: true, novel: { select: { slug: true, title: true } } } },
+      },
+    }),
+    db.novel.findMany({ select: novelCardSelect, orderBy: [{ ratingAvg: "desc" }, { ratingCount: "desc" }], take: 6 }),
   ]);
 
   // "Latest updates", web-novel style: one row per novel with its newest chapters.
@@ -88,6 +100,8 @@ export async function getHomeData(viewer: Viewer | null) {
     topRated,
     upcoming,
     continueReading,
+    comments,
+    topRatedCards: await withChapterCounts(topRatedCards, now),
   };
 }
 
@@ -428,5 +442,16 @@ export async function getAdminChapter(slug: string, number: number) {
   return db.chapter.findFirst({
     where: { number, novel: { slug } },
     include: { novel: { select: { id: true, slug: true, title: true } } },
+  });
+}
+
+/** Novels that share at least one genre, best rated first. */
+export async function getSimilarNovels(novelId: number, genreSlugs: string[], take = 5) {
+  if (!genreSlugs.length) return [];
+  return db.novel.findMany({
+    where: { id: { not: novelId }, genres: { some: { slug: { in: genreSlugs } } } },
+    orderBy: [{ ratingAvg: "desc" }, { views: "desc" }],
+    take,
+    select: { id: true, slug: true, title: true, coverUrl: true, coverHue: true, ratingAvg: true, ratingCount: true, views: true, genres: { select: { name: true }, take: 1 } },
   });
 }

@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 type Result = { slug: string; title: string; author: string; coverUrl: string | null; coverHue: number };
 
 /** Typeahead over titles and authors. Enter goes to the full browse results. */
-export function SearchBox({ className, autoFocus }: { className?: string; autoFocus?: boolean }) {
+/** `shortcut` enables Ctrl/⌘ K to focus it (use on one instance per page). */
+export function SearchBox({ className, autoFocus, shortcut }: { className?: string; autoFocus?: boolean; shortcut?: boolean }) {
   const router = useRouter();
   const listId = useId();
   const [q, setQ] = useState("");
@@ -18,6 +19,19 @@ export function SearchBox({ className, autoFocus }: { className?: string; autoFo
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const wrapper = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!shortcut) return;
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        input.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [shortcut]);
 
   useEffect(() => {
     if (!q.trim()) return;
@@ -66,6 +80,7 @@ export function SearchBox({ className, autoFocus }: { className?: string; autoFo
       >
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
         <input
+          ref={input}
           type="search"
           value={q}
           autoFocus={autoFocus}
@@ -83,14 +98,19 @@ export function SearchBox({ className, autoFocus }: { className?: string; autoFo
               setActive((a) => Math.max(a - 1, -1));
             } else if (e.key === "Escape") setOpen(false);
           }}
-          placeholder="Search titles or authors"
+          placeholder="Search"
           aria-label="Search novels"
           role="combobox"
           aria-expanded={open && shown.length > 0}
           aria-controls={listId}
           aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-          className="h-9 w-full rounded-full border border-input bg-card/60 pr-3 pl-9 text-sm shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30"
+          className="h-9 w-full rounded-md border border-input bg-card pr-16 pl-9 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/30"
         />
+        {shortcut && (
+          <kbd className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 rounded border bg-muted px-1.5 py-0.5 font-mono text-[0.65rem] text-muted-foreground">
+            Ctrl K
+          </kbd>
+        )}
       </form>
       {open && shown.length > 0 && (
         <ul

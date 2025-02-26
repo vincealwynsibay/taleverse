@@ -1,32 +1,47 @@
 import Link from "next/link";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** A plain titled block: heading, optional "more" link, hairline underneath. */
+/** A titled block: "Title ›" (links to the full list), with an optional control on the right. */
 export function Section({
   title,
   href,
-  hrefLabel = "More",
+  aside,
   className,
   children,
 }: {
   title: string;
   href?: string;
-  hrefLabel?: string;
+  aside?: React.ReactNode;
   className?: string;
   children: React.ReactNode;
 }) {
   return (
     <section className={className}>
-      <div className="mb-3 flex items-baseline justify-between gap-4 border-b pb-2">
-        <h2 className="text-base font-semibold">{title}</h2>
-        {href && (
-          <Link href={href} className="shrink-0 text-sm text-muted-foreground hover:text-primary">
-            {hrefLabel} ›
-          </Link>
-        )}
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <h2 className="text-base font-semibold">
+          {href ? (
+            <Link href={href} className="group inline-flex items-center gap-0.5 hover:text-primary">
+              {title}
+              <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+            </Link>
+          ) : (
+            title
+          )}
+        </h2>
+        {aside}
       </div>
       {children}
     </section>
+  );
+}
+
+/** Small rounded chip used for a section's filter / range control. */
+export function Chip({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} className="inline-flex items-center gap-1.5 rounded-md border bg-card px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground">
+      {children}
+    </Link>
   );
 }
 

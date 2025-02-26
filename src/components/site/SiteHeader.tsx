@@ -1,40 +1,34 @@
 import Link from "next/link";
-import { Coins } from "lucide-react";
+import { Bookmark, Coins } from "lucide-react";
 import { getViewer } from "@/lib/auth";
 import { getBalance } from "@/lib/credits";
 import { db } from "@/lib/db";
+import { authEnabled } from "@/lib/flags";
+import { getGenres } from "@/lib/queries";
 import { Button } from "@/components/ui/button";
 import { Logo } from "./Logo";
 import { SearchBox } from "./SearchBox";
 import { ThemeToggle } from "./ThemeToggle";
-import { DemoMenu, MobileNav, UserMenu } from "./UserMenu";
+import { MenuSheet, UserMenu } from "./UserMenu";
 
 export async function SiteHeader() {
   const viewer = await getViewer();
-  const balance = viewer ? await getBalance(db, viewer.id) : null;
+  const [balance, genres] = await Promise.all([viewer ? getBalance(db, viewer.id) : null, getGenres()]);
   const headerViewer = viewer && { username: viewer.username, imageUrl: viewer.imageUrl, isAdmin: viewer.isAdmin, isDemo: viewer.isDemo };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-lg supports-[backdrop-filter]:bg-background/65">
-      <div className="container-page flex h-16 items-center gap-3">
-        <MobileNav viewer={headerViewer} />
+    <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur-lg">
+      <div className="container-page flex h-14 items-center gap-2">
         <Logo />
-        <nav className="ml-4 hidden items-center gap-1 text-sm md:flex">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/novels">Browse</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/schedule">Schedule</Link>
-          </Button>
-          {viewer && (
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/library">Library</Link>
-            </Button>
-          )}
-        </nav>
-        <SearchBox className="mx-auto hidden w-full max-w-xs md:block" />
-        <div className="ml-auto flex items-center gap-1 md:ml-0">
+        <MenuSheet viewer={headerViewer} genres={genres.map((g) => ({ name: g.name, slug: g.slug }))} />
+        <SearchBox className="mx-auto hidden w-full max-w-sm md:block" shortcut />
+        <div className="ml-auto flex items-center gap-0.5 md:ml-0">
           <ThemeToggle />
+          <Button asChild variant="ghost" size="icon" aria-label="Library">
+            <Link href="/library">
+              <Bookmark />
+            </Link>
+          </Button>
           {headerViewer ? (
             <>
               <Button asChild variant="ghost" size="sm" className="gap-1.5 font-semibold tabular-nums" aria-label={`${balance} credits`}>
@@ -47,9 +41,11 @@ export async function SiteHeader() {
             </>
           ) : (
             <>
-              <DemoMenu />
-              <Button asChild>
-                <Link href="/sign-in">Sign in</Link>
+              <Button asChild variant="ghost" size="sm" className="ml-1">
+                <Link href="/sign-in">Log in</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href={authEnabled ? "/sign-up" : "/sign-in"}>Sign up</Link>
               </Button>
             </>
           )}
@@ -60,28 +56,61 @@ export async function SiteHeader() {
 }
 
 export function SiteFooter() {
+  const columns = [
+    {
+      title: "Discover",
+      links: [
+        ["Trending", "/novels"],
+        ["Top rated", "/novels?sort=rating"],
+        ["Recently updated", "/novels?sort=updated"],
+        ["Release schedule", "/schedule"],
+      ],
+    },
+    {
+      title: "You",
+      links: [
+        ["Library", "/library"],
+        ["Credits", "/credits"],
+        ["Sign in", "/sign-in"],
+      ],
+    },
+    {
+      title: "Site",
+      links: [
+        ["Source code", "https://github.com/vincealwynsibay/taleverse"],
+        ["Project Gutenberg", "https://www.gutenberg.org"],
+      ],
+    },
+  ];
   return (
-    <footer className="mt-24 border-t">
-      <div className="container-page flex flex-col gap-4 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <Logo className="text-base text-foreground" />
-        <p className="max-w-md">
-          A portfolio project. Novels are public-domain texts from{" "}
-          <a href="https://www.gutenberg.org" className="underline underline-offset-2 hover:text-foreground">
-            Project Gutenberg
-          </a>
-          ; payments run in Stripe test mode.
-        </p>
-        <nav className="flex gap-4">
-          <Link href="/novels" className="hover:text-foreground">
-            Browse
-          </Link>
-          <Link href="/schedule" className="hover:text-foreground">
-            Schedule
-          </Link>
-          <a href="https://github.com/vincealwynsibay/taleverse" className="hover:text-foreground">
-            Source
-          </a>
-        </nav>
+    <footer className="mt-20 border-t">
+      <div className="container-page grid gap-8 py-10 text-sm sm:grid-cols-[1.5fr_repeat(3,1fr)]">
+        <div className="space-y-2">
+          <Logo />
+          <p className="max-w-xs text-xs text-muted-foreground">
+            A portfolio project. Novels are public-domain texts from Project Gutenberg; payments run in Stripe test mode.
+          </p>
+        </div>
+        {columns.map((c) => (
+          <nav key={c.title} className="space-y-2">
+            <p className="font-medium">{c.title}</p>
+            <ul className="space-y-1.5 text-muted-foreground">
+              {c.links.map(([label, href]) => (
+                <li key={href}>
+                  <Link href={href} className="hover:text-foreground">
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+      </div>
+      <div className="container-page flex justify-between border-t py-4 text-xs text-muted-foreground">
+        <span>© {new Date().getFullYear()} taleverse</span>
+        <a href="#main" className="hover:text-foreground">
+          Back to top ↑
+        </a>
       </div>
     </footer>
   );

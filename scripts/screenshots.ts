@@ -53,7 +53,7 @@ const shots: Shot[] = [
     reader: "paper",
     theme: "light",
     prepare: async (page) => {
-      await page.getByRole("button", { name: "Reading settings" }).click();
+      await page.getByRole("button", { name: "Reader settings" }).click();
       await page.waitForTimeout(500);
     },
   },
@@ -77,6 +77,41 @@ const shots: Shot[] = [
   { name: "mobile-novel", path: "/novels/dracula", theme: "light", mobile: true },
   { name: "mobile-reader", path: "/novels/treasure-island/1", reader: "sepia", mobile: true, persona: "guest" },
   { name: "mobile-paywall", path: "/novels/dracula/25", reader: "night", mobile: true, prepare: scrollToPaywall },
+  {
+    name: "mobile-reader-settings",
+    path: "/novels/dracula/3",
+    persona: "guest",
+    mobile: true,
+    prepare: async (page) => {
+      await page.getByRole("button", { name: "Reader settings" }).click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: "mobile-reader-chapters",
+    path: "/novels/treasure-island/4",
+    persona: "guest",
+    mobile: true,
+    prepare: async (page) => {
+      await page.getByRole("button", { name: /^Chapter 4/ }).click();
+      await page.waitForTimeout(500);
+    },
+  },
+  {
+    name: "mobile-reader-playing",
+    path: "/novels/frankenstein/5",
+    persona: "guest",
+    reader: "sepia",
+    mobile: true,
+    prepare: async (page) => {
+      await page.evaluate(() => window.scrollBy(0, 600));
+      await page.waitForTimeout(300);
+      await page.mouse.click(195, 420); // tap to show the controls
+      await page.waitForTimeout(300);
+      await page.getByRole("button", { name: "Start auto-scroll" }).click();
+      await page.waitForTimeout(1500);
+    },
+  },
 ];
 
 async function contextFor(browser: Awaited<ReturnType<typeof chromium.launch>>, shot: Shot): Promise<BrowserContext> {

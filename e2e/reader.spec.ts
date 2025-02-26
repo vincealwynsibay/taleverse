@@ -7,7 +7,7 @@ test.describe.configure({ mode: "serial" });
 test("a guest can read free chapters but only sees a preview of early access", async ({ page, context }) => {
   await signInAs(context, "guest");
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Stories worth staying up/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Trending" })).toBeVisible();
 
   await page.goto("/novels/dracula");
   await page.getByRole("link", { name: "Start reading" }).click();
