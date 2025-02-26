@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { after } from "next/server";
 import { format } from "date-fns";
-import { PencilLine } from "lucide-react";
+import { ChevronRight, LockKeyhole, PencilLine } from "lucide-react";
 import { getViewer } from "@/lib/auth";
 import { chapterState } from "@/lib/access";
 import { blockText } from "@/lib/blocks";
@@ -41,11 +41,13 @@ export async function generateMetadata({ params }: PageProps<"/novels/[slug]/[ch
 export default async function ReaderPage({ params }: PageProps<"/novels/[slug]/[chapter]">) {
   const { slug, number, viewer, data } = await load(params);
   const { chapter, body, access } = data;
-  const [settingsCookie, toc, comments] = await Promise.all([
+  const [settingsCookie, toc, comments, libraryEntry] = await Promise.all([
     cookies().then((c) => c.get(READER_COOKIE)?.value),
     getChapterList(chapter.novelId, viewer, { perPage: 1000 }),
     getComments(chapter.id),
+    viewer ? db.libraryEntry.findUnique({ where: { userId_novelId: { userId: viewer.id, novelId: chapter.novelId } } }) : null,
   ]);
+  const nextItem = data.next ? toc.items.find((c) => c.number === data.next) : undefined;
   const locked = access.kind === "locked";
   const state = chapterState(chapter);
 
@@ -57,17 +59,52 @@ export default async function ReaderPage({ params }: PageProps<"/novels/[slug]/[
 
   return (
     <ReaderShell
-      novel={{ slug, title: chapter.novel.title }}
-      chapter={{ id: chapter.id, number, title: chapter.title }}
+      novel={{ id: chapter.novelId, slug, title: chapter.novel.title }}
+      chapter={{ id: chapter.id, number, title: chapter.title, wordCount: chapter.wordCount }}
       prev={data.prev}
       next={data.next}
       toc={toc.items.map((c) => ({ number: c.number, title: c.title, locked: c.state === "early-access" && !c.unlocked }))}
       initialSettings={parseReaderSettings(settingsCookie)}
       signedIn={Boolean(viewer)}
+      inLibrary={Boolean(libraryEntry)}
       trackProgress={!locked}
       savedPosition={data.savedPosition}
       footer={
-        !locked && <Comments chapterId={chapter.id} comments={comments} viewer={viewer && { id: viewer.id, isAdmin: viewer.isAdmin }} />
+        !locked && (
+          <>
+            <div className="mx-auto max-w-[var(--reader-width)] px-5 pb-10 font-sans">
+              {nextItem ? (
+                <Link
+                  href={`/novels/${slug}/${nextItem.number}`}
+                  className="group flex items-center gap-4 rounded-lg border border-current/15 p-4 transition-colors hover:border-primary"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs opacity-60">Up next</p>
+                    <p className="truncate font-medium group-hover:text-primary">
+                      Chapter {nextItem.number}
+                      {nextItem.title && `: ${nextItem.title}`}
+                    </p>
+                    {nextItem.state === "early-access" && !nextItem.unlocked && (
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-primary">
+                        <LockKeyhole className="size-3" /> Early access · {nextItem.unlockPrice} credits
+                      </p>
+                    )}
+                  </div>
+                  <ChevronRight className="size-5 opacity-60 group-hover:text-primary group-hover:opacity-100" />
+                </Link>
+              ) : (
+                <p className="rounded-lg border border-dashed border-current/15 p-4 text-center text-sm opacity-70">
+                  You&apos;re all caught up.{" "}
+                  <Link href="/schedule" className="underline underline-offset-2">
+                    See when the next chapter drops
+                  </Link>
+                  .
+                </p>
+              )}
+            </div>
+            <Comments chapterId={chapter.id} comments={comments} viewer={viewer && { id: viewer.id, isAdmin: viewer.isAdmin }} />
+          </>
+        )
       }
     >
       <article className="mx-auto max-w-[var(--reader-width)] px-5 pt-12 pb-10 sm:pt-16">
@@ -113,9 +150,6 @@ export default async function ReaderPage({ params }: PageProps<"/novels/[slug]/[
           />
         )}
 
-        {!locked && !data.next && (
-          <p className="mt-16 text-center font-sans text-sm opacity-60">You&apos;re all caught up. ⁂</p>
-        )}
       </article>
     </ReaderShell>
   );

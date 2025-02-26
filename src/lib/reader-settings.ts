@@ -9,14 +9,42 @@ export type ReaderSettings = {
   leading: number; // index into LEADINGS
   width: number; // index into WIDTHS
   theme: "auto" | "paper" | "sepia" | "night";
+  /** Spaced paragraphs (web) or indented ones (book). */
+  paragraphs: "spaced" | "indented";
+  justify: boolean;
+  /** Auto-scroll speed, index into SCROLL_SPEEDS. */
+  speed: number;
+  /** How auto-scroll moves: a slow continuous creep, or a page at a time. */
+  autoStyle: "creep" | "jump";
+  /** Floating "42%" pill. */
+  showPercent: boolean;
+  /** Floating "Ch. 3 / 25" pill. */
+  showChapter: boolean;
+  /** Tap the left/right third of the page to move a screen; middle toggles controls. */
+  tapZones: boolean;
 };
 
 export const READER_COOKIE = "tv_reader";
-export const SIZES = ["1rem", "1.0625rem", "1.1875rem", "1.3125rem", "1.4375rem"];
-export const LEADINGS = [1.6, 1.8, 2];
+export const SIZES = ["0.9375rem", "1rem", "1.0625rem", "1.1875rem", "1.3125rem", "1.4375rem"];
+export const LEADINGS = [1.55, 1.75, 1.95];
 export const WIDTHS = ["34rem", "40rem", "48rem"];
+/** Pixels per second. */
+export const SCROLL_SPEEDS = [18, 28, 40, 56, 80];
 
-export const defaultReaderSettings: ReaderSettings = { font: "sans", size: 2, leading: 1, width: 1, theme: "auto" };
+export const defaultReaderSettings: ReaderSettings = {
+  font: "sans",
+  size: 2,
+  leading: 1,
+  width: 1,
+  theme: "auto",
+  paragraphs: "spaced",
+  justify: false,
+  speed: 1,
+  autoStyle: "creep",
+  showPercent: true,
+  showChapter: false,
+  tapZones: false,
+};
 
 const inRange = (n: unknown, len: number, fallback: number) =>
   typeof n === "number" && Number.isInteger(n) && n >= 0 && n < len ? n : fallback;
@@ -32,6 +60,13 @@ export function parseReaderSettings(raw: string | undefined): ReaderSettings {
       leading: inRange(v.leading, LEADINGS.length, d.leading),
       width: inRange(v.width, WIDTHS.length, d.width),
       theme: ["auto", "paper", "sepia", "night"].includes(v.theme) ? v.theme : d.theme,
+      paragraphs: v.paragraphs === "indented" ? "indented" : "spaced",
+      justify: v.justify === true,
+      speed: inRange(v.speed, SCROLL_SPEEDS.length, d.speed),
+      autoStyle: v.autoStyle === "jump" ? "jump" : "creep",
+      showPercent: v.showPercent !== false,
+      showChapter: v.showChapter === true,
+      tapZones: v.tapZones === true,
     };
   } catch {
     return defaultReaderSettings;

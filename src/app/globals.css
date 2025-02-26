@@ -190,3 +190,62 @@
 .bn-container.bn-container .bn-editor {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Reader options applied to the chapter body. */
+[data-paragraphs="indented"] p {
+  margin-block: 0;
+}
+[data-paragraphs="indented"] p + p {
+  text-indent: 1.5em;
+}
+[data-justify="true"] p {
+  text-align: justify;
+  hyphens: auto;
+}
+/* Read-aloud: the paragraph being spoken. */
+#chapter-body [data-speaking] {
+  background: color-mix(in oklch, var(--primary) 16%, transparent);
+  box-shadow: 0 0 0 0.35em color-mix(in oklch, var(--primary) 16%, transparent);
+  border-radius: 0.2em;
+  transition: background 0.2s;
+}
+/* Reader scrubber */
+.reader-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1.25rem;
+  background: transparent;
+  cursor: pointer;
+}
+.reader-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--primary) var(--fill, 0%), color-mix(in oklch, currentColor 18%, transparent) var(--fill, 0%));
+}
+.reader-range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in oklch, currentColor 18%, transparent);
+}
+.reader-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--primary);
+}
+.reader-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  margin-top: -6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--primary);
+  border: 2px solid var(--reader-bg);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+}
+.reader-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--primary);
+  border: 2px solid var(--reader-bg);
+}
