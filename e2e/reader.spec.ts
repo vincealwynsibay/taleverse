@@ -92,6 +92,26 @@ test("a reader replies in a thread and votes", async ({ page, context }) => {
   await expect(top).toContainText("hidden");
 });
 
+test("a reader comments on a single paragraph", async ({ page, context }) => {
+  await signInAs(context, "reader");
+  await page.goto("/novels/dracula/1");
+  const bubble = page.locator('#chapter-body [data-p="2"] .pc-bubble');
+  const before = Number(await bubble.getAttribute("data-count"));
+  await bubble.click();
+  const sheet = page.getByRole("dialog");
+  await expect(sheet.getByText("Paragraph comments")).toBeVisible();
+  await expect(sheet.locator("blockquote")).toContainText("Klausenburgh");
+
+  await page.waitForTimeout(5500); // comment cooldown from earlier tests
+  await sheet.getByLabel("Write a comment").fill("I want that paprika hendl recipe too.");
+  await sheet.getByRole("button", { name: "Comment", exact: true }).click();
+  await expect(sheet.locator("li p", { hasText: "paprika hendl recipe too" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(bubble).toHaveAttribute("data-count", String(before + 1));
+  // Paragraph threads stay out of the chapter discussion.
+  await expect(page.locator('section[aria-labelledby="comments-heading"]').getByText("paprika hendl recipe too")).toHaveCount(0);
+});
+
 test("readers can't see the admin area", async ({ page, context }) => {
   await signInAs(context, "reader");
   const res = await page.goto("/admin");

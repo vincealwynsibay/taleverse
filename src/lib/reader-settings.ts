@@ -4,7 +4,8 @@
  * styles on load.
  */
 export type ReaderSettings = {
-  font: "serif" | "sans";
+  /** "readable" is Atkinson Hyperlegible, designed for low-vision and dyslexic readers. */
+  font: "serif" | "sans" | "readable";
   size: number; // index into SIZES
   leading: number; // index into LEADINGS
   width: number; // index into WIDTHS
@@ -26,6 +27,12 @@ export type ReaderSettings = {
   layout: "scroll" | "paged";
   /** Page-turn animation in paged layout. */
   pageTurn: "flip" | "slide" | "none";
+  /** Dim everything but the paragraph being read. */
+  focus: boolean;
+  /** Night-light warmth, 0 (off) to 3. */
+  warmth: number;
+  /** Show paragraph comment bubbles. */
+  paragraphComments: boolean;
 };
 
 export const READER_COOKIE = "tv_reader";
@@ -50,6 +57,9 @@ export const defaultReaderSettings: ReaderSettings = {
   tapZones: false,
   layout: "scroll",
   pageTurn: "flip",
+  focus: false,
+  warmth: 0,
+  paragraphComments: true,
 };
 
 const inRange = (n: unknown, len: number, fallback: number) =>
@@ -61,7 +71,7 @@ export function parseReaderSettings(raw: string | undefined): ReaderSettings {
     const v = JSON.parse(decodeURIComponent(raw));
     const d = defaultReaderSettings;
     return {
-      font: v.font === "serif" ? "serif" : "sans",
+      font: v.font === "serif" || v.font === "readable" ? v.font : "sans",
       size: inRange(v.size, SIZES.length, d.size),
       leading: inRange(v.leading, LEADINGS.length, d.leading),
       width: inRange(v.width, WIDTHS.length, d.width),
@@ -75,6 +85,9 @@ export function parseReaderSettings(raw: string | undefined): ReaderSettings {
       tapZones: v.tapZones === true,
       layout: v.layout === "paged" ? "paged" : "scroll",
       pageTurn: v.pageTurn === "slide" || v.pageTurn === "none" ? v.pageTurn : "flip",
+      focus: v.focus === true,
+      warmth: inRange(v.warmth, 4, 0),
+      paragraphComments: v.paragraphComments !== false,
     };
   } catch {
     return defaultReaderSettings;

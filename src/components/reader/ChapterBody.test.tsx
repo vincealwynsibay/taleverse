@@ -10,7 +10,7 @@ describe("ChapterBody", () => {
     const html = render([
       { type: "paragraph", content: [{ type: "text", text: "It was ", styles: {} }, { type: "text", text: "late", styles: { italic: true, bold: true } }] },
     ]);
-    expect(html).toBe("<p><span>It was </span><span><em><strong>late</strong></em></span></p>");
+    expect(html).toBe("<p data-p=\"0\"><span>It was </span><span><em><strong>late</strong></em></span></p>");
   });
 
   it("escapes text instead of injecting HTML", () => {

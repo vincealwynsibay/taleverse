@@ -82,7 +82,14 @@ export const seedReviews: Record<string, { by: ReaderKey; rating: number; body: 
 };
 
 /** A seeded comment thread: replies nest, scores are starting vote totals. */
-export type SeedComment = { by: ReaderKey; body: string; score?: number; replies?: SeedComment[] };
+export type SeedComment = {
+  by: ReaderKey;
+  body: string;
+  score?: number;
+  /** Block index in the chapter for a paragraph comment (top-level only; replies inherit it). */
+  paragraph?: number;
+  replies?: SeedComment[];
+};
 
 /** Threaded discussions on early chapters (chapter number -> top-level comments). */
 export const seedComments: Record<string, { chapter: number; thread: SeedComment[] }[]> = {
@@ -114,6 +121,20 @@ export const seedComments: Record<string, { chapter: number; thread: SeedComment
           replies: [{ by: "tobias", score: 11, body: "Wait until the newspaper clippings start. Stoker was doing found-footage in 1897." }],
         },
         { by: "marisol", score: 4, body: "Paprika hendl sounds delicious though. Mina better get that recipe." },
+        {
+          by: "tobias",
+          paragraph: 1,
+          score: 15,
+          body: "\"The train was an hour late.\" The most relatable sentence in Victorian fiction.",
+          replies: [{ by: "owen", score: 6, body: "Some things never change. Bistritz rail is still running late in spirit." }],
+        },
+        { by: "priya", paragraph: 2, score: 9, body: "He's writing down recipes for Mina on the way to a vampire's castle. Protect him." },
+        {
+          by: "nadia",
+          paragraph: 1,
+          score: 4,
+          body: "\"Leaving the West and entering the East\" is doing a lot of foreshadowing.",
+        },
       ],
     },
     {
@@ -132,6 +153,13 @@ export const seedComments: Record<string, { chapter: number; thread: SeedComment
     {
       chapter: 1,
       thread: [
+        {
+          by: "jun",
+          paragraph: 0,
+          score: 31,
+          body: "Read it again: she's saying the neighbours decide a rich man must want a wife. It's about them, not him.",
+          replies: [{ by: "marisol", score: 12, body: "Exactly. The irony is the whole book in one sentence." }],
+        },
         {
           by: "marisol",
           score: 51,

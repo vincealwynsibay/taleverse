@@ -49,6 +49,10 @@ export default async function ReaderPage({ params, searchParams }: PageProps<"/n
     viewer ? db.libraryEntry.findUnique({ where: { userId_novelId: { userId: viewer.id, novelId: chapter.novelId } } }) : null,
   ]);
   const nextItem = data.next ? toc.items.find((c) => c.number === data.next) : undefined;
+  // Bubbles show how many live comments each paragraph has.
+  const paragraphCounts: Record<number, number> = {};
+  for (const c of comments) if (c.paragraph !== null && !c.deleted) paragraphCounts[c.paragraph] = (paragraphCounts[c.paragraph] ?? 0) + 1;
+  const viewerInfo = viewer && { id: viewer.id, isAdmin: viewer.isAdmin };
   const locked = access.kind === "locked";
   const state = chapterState(chapter);
 
@@ -71,6 +75,8 @@ export default async function ReaderPage({ params, searchParams }: PageProps<"/n
       trackProgress={!locked}
       savedPosition={data.savedPosition}
       startAtEnd={startAtEnd}
+      comments={comments}
+      viewer={viewerInfo}
       footer={
         !locked && (
           <>
@@ -139,7 +145,7 @@ export default async function ReaderPage({ params, searchParams }: PageProps<"/n
           className="prose-reader text-[length:var(--reader-size)] leading-[var(--reader-leading)]"
           style={locked ? { maskImage: "linear-gradient(to bottom, black 40%, transparent 100%)" } : undefined}
         >
-          <ChapterBody blocks={body} />
+          <ChapterBody blocks={body} paragraphCounts={locked ? undefined : paragraphCounts} />
         </div>
 
         {locked && (

@@ -12,6 +12,8 @@ import { cn, formatCompact } from "@/lib/utils";
 export type CommentData = {
   id: number;
   parentId: number | null;
+  /** Set for paragraph comments; null for the chapter discussion. */
+  paragraph: number | null;
   body: string;
   score: number;
   deleted: boolean;
@@ -60,8 +62,10 @@ function buildTree(comments: CommentData[], sort: Sort): Node[] {
  */
 export function Comments({ chapterId, comments, viewer }: { chapterId: number; comments: CommentData[]; viewer: Viewer }) {
   const [sort, setSort] = useState<Sort>("top");
-  const tree = useMemo(() => buildTree(comments, sort), [comments, sort]);
-  const count = comments.filter((c) => !c.deleted).length;
+  // Paragraph comments live in their own threads (see ParagraphComments).
+  const chapterComments = useMemo(() => comments.filter((c) => c.paragraph === null), [comments]);
+  const tree = useMemo(() => buildTree(chapterComments, sort), [chapterComments, sort]);
+  const count = chapterComments.filter((c) => !c.deleted).length;
 
   return (
     <section className="mx-auto max-w-[var(--reader-width)] px-5 pt-4 pb-16 font-sans" aria-labelledby="comments-heading">
@@ -112,12 +116,14 @@ export function Comments({ chapterId, comments, viewer }: { chapterId: number; c
 function Composer({
   chapterId,
   parentId,
+  paragraph,
   placeholder,
   autoFocus,
   onDone,
 }: {
   chapterId: number;
   parentId?: number;
+  paragraph?: number;
   placeholder: string;
   autoFocus?: boolean;
   onDone?: () => void;
@@ -131,7 +137,7 @@ function Composer({
       onSubmit={(e) => {
         e.preventDefault();
         start(async () => {
-          const res = await postCommentAction({ chapterId, body, parentId });
+          const res = await postCommentAction({ chapterId, body, parentId, paragraph });
           if (!res.ok) return void toast.error(res.error);
           setBody("");
           onDone?.();
@@ -333,5 +339,48 @@ function Thread({ node, depth, chapterId, viewer }: { node: Node; depth: number;
         </div>
       </div>
     </li>
+  );
+}
+
+/** One paragraph's discussion: the quoted passage, its threads and a composer. */
+export function ParagraphComments({
+  chapterId,
+  paragraph,
+  quote,
+  comments,
+  viewer,
+}: {
+  chapterId: number;
+  paragraph: number;
+  quote: string;
+  comments: CommentData[];
+  viewer: Viewer;
+}) {
+  const tree = useMemo(() => buildTree(comments.filter((c) => c.paragraph === paragraph), "top"), [comments, paragraph]);
+  return (
+    <div className="space-y-5 px-4 pb-8 font-sans">
+      {quote && (
+        <blockquote className="line-clamp-6 border-l-2 border-primary/60 pl-3 text-sm leading-relaxed italic opacity-80">{quote}</blockquote>
+      )}
+      {viewer ? (
+        <Composer chapterId={chapterId} paragraph={paragraph} placeholder="Say something about this passage" autoFocus={tree.length === 0} />
+      ) : (
+        <p className="rounded-md border border-dashed border-current/20 px-4 py-3 text-sm opacity-80">
+          <Link href="/sign-in" className="font-medium underline underline-offset-2">
+            Sign in
+          </Link>{" "}
+          to comment on this passage.
+        </p>
+      )}
+      {tree.length === 0 ? (
+        <p className="py-4 text-center text-sm opacity-60">No comments on this paragraph yet.</p>
+      ) : (
+        <ul className="space-y-5">
+          {tree.map((node) => (
+            <Thread key={node.id} node={node} depth={0} chapterId={chapterId} viewer={viewer} />
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

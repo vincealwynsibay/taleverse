@@ -333,6 +333,7 @@ export async function getComments(chapterId: number, viewerId?: number) {
     select: {
       id: true,
       parentId: true,
+      paragraph: true,
       body: true,
       score: true,
       deletedAt: true,

@@ -96,6 +96,7 @@ export async function deleteReviewAction(novelId: number) {
 const commentInput = z.object({
   chapterId: id,
   parentId: id.optional(),
+  paragraph: z.number().int().min(0).max(5000).optional(),
   body: z.string().trim().min(1, "Say something first.").max(2000, "Keep comments under 2000 characters."),
 });
 
@@ -105,6 +106,7 @@ export async function postCommentAction(input: z.input<typeof commentInput>) {
   return run(async () => {
     const viewer = await requireViewer();
     const { chapterId, body, parentId } = commentInput.parse(input);
+    let { paragraph } = commentInput.parse(input);
     const last = await db.comment.findFirst({ where: { userId: viewer.id }, orderBy: { createdAt: "desc" }, select: { createdAt: true } });
     if (last && Date.now() - last.createdAt.getTime() < COMMENT_COOLDOWN_MS) {
       return fail("You're commenting a little fast. Try again in a few seconds.", "rate-limited");
@@ -112,11 +114,12 @@ export async function postCommentAction(input: z.input<typeof commentInput>) {
     const chapter = await db.chapter.findUnique({ where: { id: chapterId }, select: { number: true, novel: { select: { slug: true } } } });
     if (!chapter) return fail("Chapter not found.");
     if (parentId) {
-      const parent = await db.comment.findUnique({ where: { id: parentId }, select: { chapterId: true, deletedAt: true } });
+      const parent = await db.comment.findUnique({ where: { id: parentId }, select: { chapterId: true, deletedAt: true, paragraph: true } });
       if (!parent || parent.chapterId !== chapterId) return fail("That comment no longer exists.");
       if (parent.deletedAt) return fail("You can't reply to a deleted comment.");
+      paragraph = parent.paragraph ?? undefined; // replies live in the same paragraph thread
     }
-    const comment = await db.comment.create({ data: { userId: viewer.id, chapterId, body, parentId } });
+    const comment = await db.comment.create({ data: { userId: viewer.id, chapterId, body, parentId, paragraph } });
     revalidatePath(`/novels/${chapter.novel.slug}/${chapter.number}`);
     return ok({ id: comment.id });
   });

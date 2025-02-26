@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Block, InlineContent, StyledText } from "@/lib/blocks";
+import { ParagraphBubble } from "./ParagraphBubble";
 
 /**
  * Renders stored BlockNote JSON as semantic HTML on the server. Only the block
@@ -49,14 +50,19 @@ function alignment(block: Block): React.CSSProperties | undefined {
   return a === "center" || a === "right" || a === "justify" ? { textAlign: a } : undefined;
 }
 
-function renderBlock(block: Block, key: number): ReactNode {
+/** Paragraph-comment counts by block index; omit to render without bubbles (previews, tests). */
+type Counts = Record<number, number> | undefined;
+
+function renderBlock(block: Block, key: number, counts: Counts): ReactNode {
+  const bubble = counts ? <ParagraphBubble index={key} count={counts[key] ?? 0} /> : null;
   const content = (block as { content?: InlineContent[] }).content;
   switch (block.type) {
     case "paragraph": {
       const inline = renderInline(content);
       return (
-        <p key={key} style={alignment(block)}>
+        <p key={key} data-p={key} style={alignment(block)}>
           {inline}
+          {bubble}
         </p>
       );
     }
@@ -71,8 +77,9 @@ function renderBlock(block: Block, key: number): ReactNode {
     }
     case "quote":
       return (
-        <blockquote key={key} className="whitespace-pre-line">
+        <blockquote key={key} data-p={key} className="whitespace-pre-line">
           {renderInline(content)}
+          {bubble}
         </blockquote>
       );
     case "divider":
@@ -95,6 +102,6 @@ function renderBlock(block: Block, key: number): ReactNode {
   }
 }
 
-export function ChapterBody({ blocks }: { blocks: Block[] }) {
-  return <>{blocks.map(renderBlock)}</>;
+export function ChapterBody({ blocks, paragraphCounts }: { blocks: Block[]; paragraphCounts?: Record<number, number> }) {
+  return <>{blocks.map((b, i) => renderBlock(b, i, paragraphCounts))}</>;
 }

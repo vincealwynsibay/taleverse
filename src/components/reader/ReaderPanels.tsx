@@ -184,6 +184,7 @@ export function ReaderSettingsPanel({ settings, update, chapter, prev, next, onG
           options={[
             { value: "sans", label: <span className="font-sans">Geist</span> },
             { value: "serif", label: <span className="font-serif">Serif</span> },
+            { value: "readable", label: <span className="font-readable">Readable</span> },
           ]}
         />
         <div className="grid grid-cols-2 gap-2">
@@ -231,6 +232,21 @@ export function ReaderSettingsPanel({ settings, update, chapter, prev, next, onG
             </button>
           ))}
         </div>
+      </Group>
+
+      <Group label="Comfort">
+        <div className="grid grid-cols-2 gap-2">
+          <Toggle label="Focus" checked={settings.focus} onChange={(focus) => update({ focus })} />
+          <Toggle label="Paragraph chat" checked={settings.paragraphComments} onChange={(paragraphComments) => update({ paragraphComments })} />
+        </div>
+        <Slider
+          label="Night light"
+          value={settings.warmth}
+          max={3}
+          onChange={(warmth) => update({ warmth })}
+          format={(v) => ["Off", "Low", "Medium", "High"][v]}
+        />
+        <p className="text-xs text-muted-foreground">Focus dims everything but the paragraph you&apos;re reading (scroll layout). Select any word to define it.</p>
       </Group>
 
       <Group label="Progress indicator">

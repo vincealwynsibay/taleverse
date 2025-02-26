@@ -33,6 +33,9 @@ import { READER_COOKIE, SCROLL_SPEEDS, readerStyle, type ReaderSettings } from "
 import { chapterFraction, scrollToFraction, useAutoScroll, useMediaQuery, useReadAloud } from "./hooks";
 import { ChapterList, ReaderSettingsPanel, TTS_RATES, type TocItem } from "./ReaderPanels";
 import { Pager, type PagerApi } from "./Pager";
+import { ParagraphComments, type CommentData } from "./Comments";
+import { PARAGRAPH_EVENT } from "./ParagraphBubble";
+import { SelectionToolbar } from "./SelectionToolbar";
 
 type Props = {
   novel: { id: number; slug: string; title: string };
@@ -47,12 +50,17 @@ type Props = {
   savedPosition: number;
   /** Open on the last page (arrived by paging back from the next chapter). */
   startAtEnd?: boolean;
+  /** All comments on the chapter (paragraph threads open in a panel). */
+  comments: CommentData[];
+  viewer: { id: number; isAdmin: boolean } | null;
   children: React.ReactNode;
   /** Rendered below the chapter (up-next card, comments). */
   footer?: React.ReactNode;
 };
 
-type Panel = "chapters" | "settings" | "comments" | null;
+type Panel = "chapters" | "settings" | "comments" | "paragraph" | null;
+
+const WARMTH = [0, 0.1, 0.18, 0.27];
 
 /** Seconds per page when auto-turning in paged layout, by speed setting. */
 const PAGE_SECONDS = [40, 30, 22, 16, 11];
@@ -67,7 +75,7 @@ const iconBtn =
  * (or move the pointer to an edge on desktop) to bring up floating controls.
  */
 export function ReaderShell(props: Props) {
-  const { novel, chapter, prev, next, toc, initialSettings, signedIn, trackProgress, savedPosition, startAtEnd, children, footer } = props;
+  const { novel, chapter, prev, next, toc, initialSettings, signedIn, trackProgress, savedPosition, startAtEnd, comments, viewer, children, footer } = props;
   const router = useRouter();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [settings, setSettings] = useState(initialSettings);
@@ -81,6 +89,7 @@ export function ReaderShell(props: Props) {
   const lastY = useRef(0);
   const lastSaved = useRef(-1);
   const fraction = useRef(0);
+  const [paragraph, setParagraph] = useState<{ index: number; quote: string } | null>(null);
   const pager = useRef<PagerApi>(null);
   // Paged layout only for readable chapters (a locked chapter shows the paywall in scroll layout).
   const paged = settings.layout === "paged" && trackProgress;
@@ -196,6 +205,51 @@ export function ReaderShell(props: Props) {
     document.getElementById("comments-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // ── Paragraph comments ──
+  useEffect(() => {
+    const open = (e: Event) => {
+      const index = (e as CustomEvent<number>).detail;
+      const el = document.querySelector(`#chapter-body [data-p="${index}"]`);
+      // Quote the passage without the bubble's own text.
+      const quote = el ? Array.from(el.childNodes).filter((n) => !(n instanceof HTMLElement && n.classList.contains("pc-bubble"))).map((n) => n.textContent).join("").trim() : "";
+      setParagraph({ index, quote });
+      setPanel("paragraph");
+    };
+    window.addEventListener(PARAGRAPH_EVENT, open);
+    return () => window.removeEventListener(PARAGRAPH_EVENT, open);
+  }, []);
+
+  // ── Focus mode: mark the paragraph nearest the middle of the screen ──
+  useEffect(() => {
+    if (!settings.focus || paged) return;
+    let raf = 0;
+    const mark = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const mid = window.innerHeight * 0.45;
+        const blocks = Array.from(document.querySelectorAll<HTMLElement>("#chapter-body > *"));
+        let best: HTMLElement | null = null;
+        let bestDist = Infinity;
+        for (const b of blocks) {
+          const r = b.getBoundingClientRect();
+          const d = r.top <= mid && r.bottom >= mid ? 0 : Math.min(Math.abs(r.top - mid), Math.abs(r.bottom - mid));
+          if (d < bestDist) {
+            bestDist = d;
+            best = b;
+          }
+        }
+        blocks.forEach((b) => (b === best ? b.setAttribute("data-focused", "") : b.removeAttribute("data-focused")));
+      });
+    };
+    mark();
+    window.addEventListener("scroll", mark, { passive: true });
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", mark);
+      document.querySelectorAll("#chapter-body [data-focused]").forEach((b) => b.removeAttribute("data-focused"));
+    };
+  }, [settings.focus, paged]);
+
   // ── Paged layout ──
   const onPagerProgress = useCallback((f: number) => {
     fraction.current = f;
@@ -287,10 +341,13 @@ export function ReaderShell(props: Props) {
   const sheetSide = isDesktop ? "right" : "bottom";
   const sheetClass = isDesktop ? "w-[380px] sm:max-w-[380px] gap-0" : "max-h-[85dvh] gap-0 rounded-t-xl";
   const showBottom = chrome || playing;
+  const fontClass = settings.font === "serif" ? "font-serif" : settings.font === "readable" ? "font-readable" : "font-sans";
 
   return (
     <div
       data-reader-theme={settings.theme === "auto" ? undefined : settings.theme}
+      data-pc={settings.paragraphComments ? "on" : "off"}
+      data-focus={settings.focus && !paged ? "on" : "off"}
       style={readerStyle(settings)}
       className="min-h-dvh bg-reader-bg text-reader-fg transition-colors"
     >
@@ -336,7 +393,7 @@ export function ReaderShell(props: Props) {
 
       {/* ── Chapter ── */}
       {paged ? (
-        <main id="main" className={settings.font === "serif" ? "font-serif" : "font-sans"} data-paragraphs={settings.paragraphs} data-justify={settings.justify}>
+        <main id="main" className={fontClass} data-paragraphs={settings.paragraphs} data-justify={settings.justify}>
           <Pager
             ref={pager}
             animation={settings.pageTurn}
@@ -371,7 +428,7 @@ export function ReaderShell(props: Props) {
         </main>
       ) : (
         <>
-          <main id="main" onClick={onPageClick} className={cn("pt-14", settings.font === "serif" ? "font-serif" : "font-sans")}>
+          <main id="main" onClick={onPageClick} className={cn("pt-14", fontClass)}>
             <div data-paragraphs={settings.paragraphs} data-justify={settings.justify}>
               {children}
             </div>
@@ -503,7 +560,29 @@ export function ReaderShell(props: Props) {
         </div>
       </footer>
 
+      {/* Night light: a warm wash over everything, including the bars */}
+      {settings.warmth > 0 && (
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 z-[60] mix-blend-multiply"
+          style={{ background: `rgb(255 158 70 / ${WARMTH[settings.warmth]})` }}
+        />
+      )}
+
+      {trackProgress && <SelectionToolbar />}
+
       {/* ── Panels ── */}
+      <Sheet open={panel === "paragraph"} onOpenChange={(o) => setPanel(o ? "paragraph" : null)}>
+        <SheetContent side={sheetSide} className={cn(sheetClass, "flex flex-col overflow-y-auto")}>
+          <SheetHeader>
+            <SheetTitle>Paragraph comments</SheetTitle>
+            <SheetDescription>
+              Chapter {chapter.number} · {novel.title}
+            </SheetDescription>
+          </SheetHeader>
+          {paragraph && <ParagraphComments chapterId={chapter.id} paragraph={paragraph.index} quote={paragraph.quote} comments={comments} viewer={viewer} />}
+        </SheetContent>
+      </Sheet>
       {paged && (
         <Sheet open={panel === "comments"} onOpenChange={(o) => setPanel(o ? "comments" : null)}>
           <SheetContent side={sheetSide} className={cn(sheetClass, "flex flex-col overflow-y-auto")}>

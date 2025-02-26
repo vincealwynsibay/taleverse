@@ -139,23 +139,25 @@ export async function seedCommunity(db: Db) {
       if (!chapter) continue;
       // Stagger timestamps so threads read in order: older comments, newer replies.
       let minutesAgo = 60 * 24 * 3;
-      const insert = async (items: SeedComment[], parentId: number | null) => {
+      const insert = async (items: SeedComment[], parentId: number | null, paragraph: number | null) => {
         for (const item of items) {
+          const para = parentId === null ? (item.paragraph ?? null) : paragraph;
           minutesAgo -= 37;
           const row = await db.comment.create({
             data: {
               userId: users.get(item.by)!,
               chapterId: chapter.id,
               parentId,
+              paragraph: para,
               body: item.body,
               score: item.score ?? 0,
               createdAt: new Date(Date.now() - minutesAgo * 60_000),
             },
           });
-          if (item.replies) await insert(item.replies, row.id);
+          if (item.replies) await insert(item.replies, row.id, para);
         }
       };
-      await insert(c.thread, null);
+      await insert(c.thread, null, null);
     }
     await refreshRating(db, novel.id);
   }

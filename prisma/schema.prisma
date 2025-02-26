@@ -197,6 +197,8 @@ model Comment {
   chapterId Int
   /// Reply to another comment (threaded, Reddit-style).
   parentId  Int?
+  /// Paragraph comment: index of the block in the chapter it's attached to (null = chapter discussion).
+  paragraph Int?
   body      String
   /// Sum of votes, kept in step with CommentVote in the same transaction.
   score     Int       @default(0)
@@ -211,6 +213,7 @@ model Comment {
   votes   CommentVote[]
 
   @@index([chapterId, createdAt])
+  @@index([chapterId, paragraph])
   @@index([parentId])
 }
 
