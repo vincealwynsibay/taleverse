@@ -29,7 +29,7 @@ Along the way: a library with reading progress and "Continue reading", ratings a
 | **Desktop reader, sepia, pages** | **Admin chapter editor** |
 | ![Reader](docs/screenshots/reader-paged.jpeg) | ![Admin editor](docs/screenshots/admin-editor.jpeg) |
 
-All 30 screenshots are in [`docs/screenshots`](docs/screenshots); logos, social images and posters are in the [brand kit](brand/README.md).
+All 44 screenshots, grouped by reader and writer (admin), are in the [screenshot gallery](docs/screenshots/README.md); logos, social images and posters are in the [brand kit](brand/README.md).
 
 ## Stack
 
@@ -86,7 +86,7 @@ All variables are documented in [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
 | `pnpm lint` / `pnpm typecheck` | ESLint and TypeScript |
 | `pnpm demo:reset` | Restore the catalogue and demo accounts |
 | `pnpm import:gutenberg` | Re-download and re-split the seed novels |
-| `pnpm screenshots` | Re-capture `docs/screenshots` (30 views) from a running `DEV_AS=reader pnpm dev` |
+| `pnpm screenshots` | Re-capture `docs/screenshots` (44 views, plus a gallery page) from a running `DEV_AS=reader pnpm dev` |
 | `pnpm brand:logo` / `pnpm brand:render` | Regenerate the logo set and the brand kit (social images, posters, framed screenshots, app icons) |
 
 ## Deploying

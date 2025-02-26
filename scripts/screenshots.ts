@@ -6,7 +6,7 @@
  *
  * Run `pnpm demo:reset` first for clean data.
  */
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { chromium, type BrowserContext, type Page } from "@playwright/test";
 
 const BASE = process.env.SCREENSHOT_URL ?? "http://localhost:3000";
@@ -144,7 +144,198 @@ const shots: Shot[] = [
     reader: "sepia",
     readerExtra: { layout: "paged", justify: true },
   },
+
+  // ── Reader: finding things ──
+  {
+    name: "search",
+    path: "/",
+    theme: "dark",
+    prepare: async (page) => {
+      await page.getByRole("combobox", { name: "Search novels" }).first().fill("the");
+      await page.getByRole("option").first().waitFor();
+      await page.waitForTimeout(300);
+    },
+  },
+  { name: "novel-reviews", path: "/novels/pride-and-prejudice", theme: "dark", element: "#reviews" },
+  { name: "mobile-menu", path: "/", theme: "dark", mobile: true, prepare: async (page) => {
+      await page.getByRole("button", { name: "Open menu" }).click();
+      await page.waitForTimeout(600);
+    } },
+
+  // ── Reader: reading tools ──
+  {
+    name: "reader-chapters",
+    path: "/novels/treasure-island/4",
+    persona: "guest",
+    reader: "night",
+    prepare: async (page) => {
+      await page.getByRole("button", { name: "Chapters" }).first().click();
+      await page.waitForTimeout(600);
+    },
+  },
+  {
+    name: "reader-define",
+    path: "/novels/dracula/1",
+    persona: "guest",
+    reader: "paper",
+    prepare: async (page) => {
+      // Select one word in the third paragraph, as a reader would with a double-click.
+      await page.evaluate(() => {
+        const p = document.querySelector('#chapter-body [data-p="2"]')!;
+        const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+          const m = /\b[a-z]{7,}\b/.exec(node.textContent ?? "");
+          if (m) {
+            const range = document.createRange();
+            range.setStart(node, m.index);
+            range.setEnd(node, m.index + m[0].length);
+            const sel = window.getSelection()!;
+            sel.removeAllRanges();
+            sel.addRange(range);
+            return;
+          }
+        }
+      });
+      await page.getByRole("button", { name: "Define" }).click();
+      await page.waitForTimeout(2500); // dictionary lookup
+    },
+  },
+  {
+    name: "reader-focus",
+    path: "/novels/jane-eyre/1",
+    persona: "guest",
+    reader: "night",
+    readerExtra: { focus: true },
+    prepare: async (page) => {
+      await page.evaluate(() => window.scrollBy(0, 900));
+      await page.waitForTimeout(900);
+    },
+  },
+  { name: "reader-night-light", path: "/novels/frankenstein/3", persona: "guest", reader: "paper", readerExtra: { warmth: 3 } },
+  { name: "reader-readable", path: "/novels/the-call-of-the-wild/1", persona: "guest", reader: "sepia", readerExtra: { font: "readable", size: 3 } },
+
+  // ── Reader: account ──
+  { name: "mobile-library", path: "/library", theme: "dark", mobile: true },
+  { name: "mobile-credits", path: "/credits", theme: "dark", mobile: true },
+
+  // ── Writer (admin) ──
+  { name: "admin-new-novel", path: "/admin/novels/new", persona: "admin", theme: "dark" },
+  { name: "admin-preview", path: "/novels/dracula/27", persona: "admin", reader: "paper" },
+  { name: "mobile-admin", path: "/admin", persona: "admin", theme: "dark", mobile: true },
+  {
+    name: "mobile-admin-editor",
+    path: "/admin/novels/dracula/chapters/26",
+    persona: "admin",
+    theme: "light",
+    mobile: true,
+    prepare: async (page) => {
+      await page.getByText(/Saved \d/).waitFor();
+    },
+  },
 ];
+
+/** Gallery sections and captions, in display order. Every shot needs one. */
+const gallery: { title: string; intro: string; shots: Record<string, string> }[] = [
+  {
+    title: "Discover",
+    intro: "Browsing as a reader: the home page, the catalogue and a novel's page.",
+    shots: {
+      home: "Home: spotlight, continue reading, trending, latest updates",
+      "home-full": "The whole home page",
+      "home-light": "Light theme, signed out",
+      browse: "Browse with genre, status and sort filters",
+      genre: "A genre page",
+      search: "Search as you type (Ctrl K)",
+      novel: "Novel page",
+      "novel-dark": "Novel page with banner art and the full chapter list",
+      "novel-reviews": "Ratings and reviews",
+      schedule: "Release schedule",
+      "mobile-home": "Home on a phone",
+      "mobile-menu": "Phone menu",
+      "mobile-novel": "Novel page on a phone",
+    },
+  },
+  {
+    title: "Read",
+    intro: "The reader: docked bars that hide on tap, scroll or page-flip layouts, and comfort settings.",
+    shots: {
+      reader: "Night theme",
+      "reader-paper": "Paper theme",
+      "reader-sepia": "Sepia theme",
+      "reader-paged": "Page mode with justified text",
+      "reader-settings": "Reader settings",
+      "reader-chapters": "Chapter list",
+      "reader-define": "Select a word to define it",
+      "reader-focus": "Focus mode dims all but the current paragraph",
+      "reader-night-light": "Night light (warm filter)",
+      "reader-readable": "Atkinson Hyperlegible, the readable typeface",
+      "mobile-reader": "Reader on a phone",
+      "mobile-reader-paged": "Page mode on a phone",
+      "mobile-reader-settings": "Settings sheet",
+      "mobile-reader-chapters": "Chapter sheet",
+      "mobile-reader-playing": "Auto-scroll with the mini player",
+    },
+  },
+  {
+    title: "Talk",
+    intro: "Comments on a single paragraph, and threaded chapter discussions with votes.",
+    shots: {
+      "mobile-reader-paragraph": "Paragraph comments from the margin",
+      comments: "Threaded chapter comments with replies and votes",
+    },
+  },
+  {
+    title: "Pay",
+    intro: "Early access: new chapters cost credits for a week, then go free.",
+    shots: {
+      paywall: "Early-access chapter, signed in",
+      "paywall-guest": "Early-access chapter, signed out",
+      "mobile-paywall": "Paywall on a phone",
+      credits: "Credits: balance, packs and history",
+      "mobile-credits": "Credits on a phone",
+      library: "Library with reading progress",
+      "mobile-library": "Library on a phone",
+    },
+  },
+  {
+    title: "Write (admin)",
+    intro: "The admin is the writer: create novels, write chapters in a block editor, and schedule releases.",
+    shots: {
+      admin: "Overview: catalogue, release queue and store activity",
+      "admin-new-novel": "New novel",
+      "admin-novel": "A novel's chapters with release state",
+      "admin-editor": "Chapter editor with release scheduling",
+      "admin-preview": "Previewing a scheduled chapter as a reader",
+      "mobile-admin": "Admin overview on a phone",
+      "mobile-admin-editor": "Chapter editor on a phone",
+    },
+  },
+];
+
+/** docs/screenshots/README.md: every shot, grouped, so GitHub renders a gallery. */
+async function writeGallery() {
+  const captioned = new Set(gallery.flatMap((g) => Object.keys(g.shots)));
+  const missing = shots.filter((s) => !captioned.has(s.name)).map((s) => s.name);
+  if (missing.length) throw new Error(`No gallery caption for: ${missing.join(", ")}`);
+  const mobile = new Set(shots.filter((s) => s.mobile).map((s) => s.name));
+  const lines = ["# Screenshots", "", `Every view of Taleverse, captured by \`pnpm screenshots\` (${shots.length} images). Desktop shots are 1440 px wide; phone shots are 390 px at 2×.`, ""];
+  for (const g of gallery) {
+    lines.push(`## ${g.title}`, "", g.intro, "");
+    const names = Object.keys(g.shots);
+    const desktop = names.filter((n) => !mobile.has(n));
+    const phone = names.filter((n) => mobile.has(n));
+    for (let i = 0; i < desktop.length; i += 2) {
+      const row = desktop.slice(i, i + 2);
+      lines.push(`| ${row.map((n) => g.shots[n]).join(" | ")} |`, `|${row.map(() => "---").join("|")}|`, `| ${row.map((n) => `<a href="${n}.jpeg"><img src="${n}.jpeg" alt="${g.shots[n]}"></a>`).join(" | ")} |`, "");
+    }
+    for (let i = 0; i < phone.length; i += 3) {
+      const row = phone.slice(i, i + 3);
+      lines.push(`| ${row.map((n) => g.shots[n]).join(" | ")} |`, `|${row.map(() => "---").join("|")}|`, `| ${row.map((n) => `<img src="${n}.jpeg" alt="${g.shots[n]}" width="260">`).join(" | ")} |`, "");
+    }
+  }
+  await writeFile(`${OUT}README.md`, lines.join("\n"));
+}
 
 async function contextFor(browser: Awaited<ReturnType<typeof chromium.launch>>, shot: Shot): Promise<BrowserContext> {
   const ctx = await browser.newContext({
@@ -167,8 +358,10 @@ async function contextFor(browser: Awaited<ReturnType<typeof chromium.launch>>, 
 
 async function main() {
   await mkdir(OUT, { recursive: true });
+  await writeGallery();
+  const only = process.argv.slice(2);
   const browser = await chromium.launch();
-  for (const shot of shots) {
+  for (const shot of only.length ? shots.filter((s) => only.includes(s.name)) : shots) {
     const ctx = await contextFor(browser, shot);
     const page = await ctx.newPage();
     await page.goto(BASE + shot.path, { waitUntil: "networkidle" });

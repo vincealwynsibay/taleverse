@@ -71,7 +71,7 @@ Dark is the default look. Teal is the only accent: use it for one phrase in a he
 | `product-hunt-1..4.png` | 1270 × 760 (2×) | Product Hunt gallery, portfolio slides, Behance |
 | `screens/desktop-*.png` | 1500 × 960 | Browser-framed desktop screenshots |
 | `screens/phone-*.png` | 520 × 1060 (2×) | Phone-framed mobile screenshots |
-| `../docs/screenshots/*.jpeg` | raw | 30 unframed screenshots of every view |
+| `../docs/screenshots/*.jpeg` | raw | 44 unframed screenshots of every view, grouped in a gallery (README.md there) |
 
 The site's own social image is `src/app/opengraph-image.tsx` (rendered per page by Next). The app icons (`src/app/icon.svg`, `src/app/apple-icon.png`, `public/icon-192.png`, `public/icon-512.png`) are written by the scripts above.
 
