@@ -254,6 +254,25 @@ async function logoJobs(): Promise<Job[]> {
   return jobsOut;
 }
 
+/** brand/index.html: one page previewing the whole kit (relative links, opens from disk). */
+async function writeGallery(outs: string[]) {
+  const fig = (src: string, cls = "") => `<figure${cls ? ` class="${cls}"` : ""}><img src="${src}" alt="${src}"><figcaption>${src}</figcaption></figure>`;
+  const logos = ["mark", "lockup-dark", "wordmark-dark", "mark-white"].map((n) => fig(`logo/${n}.svg`, "s"));
+  const lightLogos = ["lockup-light", "mark-black"].map((n) => fig(`logo/${n}.svg`, "l"));
+  const social = outs.filter((o) => !o.includes("/"));
+  const screens = outs.filter((o) => o.startsWith("screens/"));
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Taleverse brand kit</title>
+<style>body{background:${P.ink};color:${P.paper};font-family:system-ui,sans-serif;margin:0;padding:32px}h1{margin:0 0 4px}p{color:${P.mist};margin:0}h2{font-weight:600;margin:40px 0 12px}div{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}figure{margin:0}img{max-width:min(560px,100%);max-height:560px;border:1px solid ${P.inkLine};border-radius:8px}figcaption{color:${P.mist};font-size:13px;margin-top:6px}.s img{max-height:140px}.l img{background:${P.snow};padding:12px;max-height:120px}</style></head><body>
+<h1>Taleverse brand kit</h1><p>Usage, colours and where to post each file: README.md. Regenerate with pnpm brand:render.</p>
+<h2>Logo</h2><div>${[...logos, ...lightLogos].join("")}</div>
+<h2>Social &amp; posters</h2><div>${social.map((o) => fig(o)).join("")}</div>
+<h2>Framed screenshots</h2><div>${screens.map((o) => fig(o)).join("")}</div>
+</body></html>
+`;
+  await writeFile(path.join(BRAND, "index.html"), html);
+  console.log("  index.html");
+}
+
 async function main() {
   await mkdir(BUILD, { recursive: true });
   const all = [...(await logoJobs()), ...(await jobs())];
@@ -282,6 +301,8 @@ async function main() {
     ["logo/png/mark-512.png", "public/icon-512.png"],
   ];
   for (const [from, to] of icons) await writeFile(path.join(ROOT, to), await readFile(path.join(BRAND, from)));
+  await writeGallery(all.map((j) => j.out));
+
   // favicon.ico (16/32/48) needs ImageMagick; skip quietly without it.
   try {
     execFileSync("convert", [path.join(BRAND, "logo/png/mark-48.png"), "-define", "icon:auto-resize=48,32,16", path.join(ROOT, "src/app/favicon.ico")]);

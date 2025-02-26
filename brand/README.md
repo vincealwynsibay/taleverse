@@ -1,6 +1,6 @@
 # Taleverse brand kit
 
-Everything you need to post Taleverse anywhere. All assets are generated from code, so they stay in sync with the product:
+Everything you need to post Taleverse anywhere. Open [`index.html`](index.html) for a preview of the whole kit on one page. All assets are generated from code, so they stay in sync with the product:
 
 ```bash
 DEV_AS=reader pnpm dev   # in one terminal
