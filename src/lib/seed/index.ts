@@ -8,7 +8,7 @@ import { refreshRating } from "../ratings";
 import { catalog } from "./catalog";
 import { markupToBlocks } from "./markup";
 import { buildSchedule } from "./schedule";
-import { seedComments, seedReaders, seedReviews, seedViews } from "./social";
+import { seedComments, seedReaders, seedReviews, seedViews, type SeedComment } from "./social";
 
 type SeedFile = { slug: string; source: string; chapters: { title: string; paragraphs: string[] }[] };
 
@@ -136,7 +136,26 @@ export async function seedCommunity(db: Db) {
     }
     for (const c of seedComments[novel.slug] ?? []) {
       const chapter = await db.chapter.findUnique({ where: { novelId_number: { novelId: novel.id, number: c.chapter } } });
-      if (chapter) await db.comment.create({ data: { userId: users.get(c.by)!, chapterId: chapter.id, body: c.body } });
+      if (!chapter) continue;
+      // Stagger timestamps so threads read in order: older comments, newer replies.
+      let minutesAgo = 60 * 24 * 3;
+      const insert = async (items: SeedComment[], parentId: number | null) => {
+        for (const item of items) {
+          minutesAgo -= 37;
+          const row = await db.comment.create({
+            data: {
+              userId: users.get(item.by)!,
+              chapterId: chapter.id,
+              parentId,
+              body: item.body,
+              score: item.score ?? 0,
+              createdAt: new Date(Date.now() - minutesAgo * 60_000),
+            },
+          });
+          if (item.replies) await insert(item.replies, row.id);
+        }
+      };
+      await insert(c.thread, null);
     }
     await refreshRating(db, novel.id);
   }

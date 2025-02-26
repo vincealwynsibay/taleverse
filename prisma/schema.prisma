@@ -43,6 +43,7 @@ model User {
   progress ReadingProgress[]
   reviews  Review[]
   comments Comment[]
+  votes    CommentVote[]
 }
 
 model Genre {
@@ -191,14 +192,36 @@ model Review {
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   userId    Int
   chapterId Int
+  /// Reply to another comment (threaded, Reddit-style).
+  parentId  Int?
   body      String
-  createdAt DateTime @default(now())
+  /// Sum of votes, kept in step with CommentVote in the same transaction.
+  score     Int       @default(0)
+  /// Soft delete: a deleted comment with replies stays as "[deleted]" so the thread survives.
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter Chapter       @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  parent  Comment?      @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies Comment[]     @relation("Replies")
+  votes   CommentVote[]
 
   @@index([chapterId, createdAt])
+  @@index([parentId])
+}
+
+model CommentVote {
+  userId    Int
+  commentId Int
+  /// +1 or -1
+  value     Int
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
 }

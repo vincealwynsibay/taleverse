@@ -1,7 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 import { E2E_DATABASE_URL } from "./e2e/prepare-db";
 
-const PORT = 3100;
+// An uncommon port, and never reuse an already-running server: another local
+// app listening on a shared port once answered the tests instead of Taleverse.
+const PORT = Number(process.env.E2E_PORT ?? 47213);
 
 /**
  * End-to-end tests run the real app (next dev) against its own database, with
@@ -24,7 +26,7 @@ export default defineConfig({
   webServer: {
     command: `pnpm tsx e2e/prepare-db.ts && pnpm next dev --port ${PORT}`,
     url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 180_000,
     env: { DATABASE_URL: E2E_DATABASE_URL, DEV_AS: "reader", NEXT_TELEMETRY_DISABLED: "1" },
   },

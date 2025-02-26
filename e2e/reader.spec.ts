@@ -66,8 +66,30 @@ test("a reader builds a library, reviews and comments", async ({ page, context }
 
   await page.goto("/novels/frankenstein/1");
   await page.getByLabel("Write a comment").fill("Walton's letters are such a good way in.");
-  await page.getByRole("button", { name: "Post comment" }).click();
-  await expect(page.getByText("Walton's letters are such a good way in.")).toBeVisible();
+  await page.getByRole("button", { name: "Comment", exact: true }).click();
+  await expect(page.locator("li p", { hasText: "Walton's letters are such a good way in." })).toBeVisible();
+});
+
+test("a reader replies in a thread and votes", async ({ page, context }) => {
+  await signInAs(context, "reader");
+  await page.goto("/novels/dracula/1");
+  const top = page.locator('section[aria-labelledby="comments-heading"] > ul > li').first();
+  await expect(top).toContainText("Jonathan, buddy, take the hint");
+
+  const score = top.locator("span.tabular-nums").first();
+  const before = Number(await score.textContent());
+  await top.getByRole("button", { name: "Upvote" }).first().click();
+  await expect(score).toHaveText(String(before + 1));
+
+  // The previous test commented as the same reader; respect the 5-second comment cooldown.
+  await page.waitForTimeout(5500);
+  await top.getByRole("button", { name: "Reply" }).first().click();
+  await top.getByLabel("Write a reply").fill("Agreed. Turn the carriage around!");
+  await top.locator("form").first().getByRole("button", { name: "Reply", exact: true }).click();
+  await expect(top.locator("li p", { hasText: "Agreed. Turn the carriage around!" })).toBeVisible();
+
+  await top.getByRole("button", { name: "Collapse thread" }).first().click();
+  await expect(top).toContainText("hidden");
 });
 
 test("readers can't see the admin area", async ({ page, context }) => {

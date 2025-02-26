@@ -81,19 +81,135 @@ export const seedReviews: Record<string, { by: ReaderKey; rating: number; body: 
   ],
 };
 
-/** Comments on the first chapter of each novel (chapter number -> comments). */
-export const seedComments: Record<string, { chapter: number; by: ReaderKey; body: string }[]> = {
+/** A seeded comment thread: replies nest, scores are starting vote totals. */
+export type SeedComment = { by: ReaderKey; body: string; score?: number; replies?: SeedComment[] };
+
+/** Threaded discussions on early chapters (chapter number -> top-level comments). */
+export const seedComments: Record<string, { chapter: number; thread: SeedComment[] }[]> = {
   dracula: [
-    { chapter: 1, by: "jun", body: "The locals crossing themselves and handing him a crucifix. Jonathan, buddy, take the hint." },
-    { chapter: 1, by: "nadia", body: "Love that this is all journal entries. Feels so immediate." },
-    { chapter: 2, by: "owen", body: "\"Welcome to my house! Enter freely and of your own will!\" chills." },
+    {
+      chapter: 1,
+      thread: [
+        {
+          by: "jun",
+          score: 42,
+          body: "The locals crossing themselves and handing him a crucifix. Jonathan, buddy, take the hint.",
+          replies: [
+            {
+              by: "owen",
+              score: 18,
+              body: "In his defence he's a solicitor on a business trip. You don't cancel a property closing because of vibes.",
+              replies: [
+                { by: "nadia", score: 23, body: "Respectfully, the vibes were \"blue flames on the road at midnight\"." },
+                { by: "jun", score: 9, body: "The paperwork must go through. Even if the client is a 400-year-old bat." },
+              ],
+            },
+            { by: "priya", score: 6, body: "The old lady pressing the rosary on him gets me every time." },
+          ],
+        },
+        {
+          by: "nadia",
+          score: 27,
+          body: "Love that this is all journal entries. It makes everything feel so immediate, like you're reading evidence.",
+          replies: [{ by: "tobias", score: 11, body: "Wait until the newspaper clippings start. Stoker was doing found-footage in 1897." }],
+        },
+        { by: "marisol", score: 4, body: "Paprika hendl sounds delicious though. Mina better get that recipe." },
+      ],
+    },
+    {
+      chapter: 2,
+      thread: [
+        {
+          by: "owen",
+          score: 35,
+          body: "\"Welcome to my house! Enter freely and of your own will!\" Chills.",
+          replies: [{ by: "jun", score: 14, body: "The way he insists Jonathan crosses the threshold himself. Every rule matters in this book." }],
+        },
+      ],
+    },
   ],
   "pride-and-prejudice": [
-    { chapter: 1, by: "marisol", body: "That opening line. Iconic." },
-    { chapter: 1, by: "tobias", body: "Mr. Bennet is a menace and I mean that as a compliment." },
+    {
+      chapter: 1,
+      thread: [
+        {
+          by: "marisol",
+          score: 51,
+          body: "That opening line. Iconic.",
+          replies: [
+            { by: "priya", score: 20, body: "And it's sarcastic! People quote it straight, but she's mocking exactly the people who believe it." },
+            { by: "tobias", score: 7, body: "Most quoted opening line in English? It has to be up there." },
+          ],
+        },
+        {
+          by: "tobias",
+          score: 33,
+          body: "Mr. Bennet is a menace and I mean that as a compliment.",
+          replies: [
+            {
+              by: "nadia",
+              score: 15,
+              body: "\"You mistake me, my dear. I have a high respect for your nerves.\" Absolute menace.",
+              replies: [{ by: "marisol", score: 8, body: "Twenty years of listening to them, apparently. Legend." }],
+            },
+          ],
+        },
+      ],
+    },
   ],
-  "treasure-island": [{ chapter: 1, by: "priya", body: "Fifteen men on the dead man's chest! Here we go." }],
-  "the-adventures-of-sherlock-holmes": [{ chapter: 1, by: "owen", body: "\"You see, but you do not observe.\" Holmes in one line." }],
+  "the-adventures-of-sherlock-holmes": [
+    {
+      chapter: 1,
+      thread: [
+        {
+          by: "owen",
+          score: 29,
+          body: "\"You see, but you do not observe.\" Holmes in one line.",
+          replies: [{ by: "tobias", score: 12, body: "And then he asks Watson how many steps lead up to the flat. 17! I'd have failed too." }],
+        },
+        { by: "marisol", score: 19, body: "Irene Adler outsmarting him in the very first story is such a power move." },
+      ],
+    },
+  ],
+  "treasure-island": [
+    {
+      chapter: 1,
+      thread: [
+        {
+          by: "priya",
+          score: 22,
+          body: "Fifteen men on the dead man's chest! Here we go.",
+          replies: [{ by: "owen", score: 6, body: "Billy Bones has such main-character energy for someone who's gone by chapter 3." }],
+        },
+      ],
+    },
+  ],
+  "the-great-gatsby": [
+    {
+      chapter: 1,
+      thread: [
+        {
+          by: "jun",
+          score: 38,
+          body: "The green light at the end of the dock, right in chapter one. Fitzgerald doesn't waste a word.",
+          replies: [{ by: "priya", score: 16, body: "And Nick insisting he's \"inclined to reserve all judgments\" before judging literally everyone." }],
+        },
+      ],
+    },
+  ],
+  "peter-pan": [
+    {
+      chapter: 1,
+      thread: [
+        {
+          by: "marisol",
+          score: 24,
+          body: "\"All children, except one, grow up.\" What a first line.",
+          replies: [{ by: "nadia", score: 10, body: "Nana the dog as the nursemaid is the best worldbuilding decision in children's literature." }],
+        },
+      ],
+    },
+  ],
 };
 
 /** Deterministic, plausible view counts. */

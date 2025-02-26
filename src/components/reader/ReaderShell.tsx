@@ -139,10 +139,12 @@ export function ReaderShell(props: Props) {
         if (document.getElementById("pager-content")) return; // paged layout reports its own progress
         const y = window.scrollY;
         const f = chapterFraction();
+        const before = fraction.current;
         fraction.current = f;
         setProgress(f);
         if (y > lastY.current + 8 && y > 120 && performance.now() > ignoreScrollUntil.current) setChrome(false);
-        if (f >= 0.995) setChrome(true);
+        // Reaching the end shows the bars once; scrolling on into the comments hides them again.
+        if (f >= 0.995 && before < 0.995) setChrome(true);
         lastY.current = y;
         if (y > 200) setShowResume(false);
       });

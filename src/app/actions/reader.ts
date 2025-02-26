@@ -95,7 +95,8 @@ export async function deleteReviewAction(novelId: number) {
 
 const commentInput = z.object({
   chapterId: id,
-  body: z.string().trim().min(1, "Say something first.").max(1000, "Keep comments under 1000 characters."),
+  parentId: id.optional(),
+  body: z.string().trim().min(1, "Say something first.").max(2000, "Keep comments under 2000 characters."),
 });
 
 const COMMENT_COOLDOWN_MS = 5_000;
@@ -103,14 +104,19 @@ const COMMENT_COOLDOWN_MS = 5_000;
 export async function postCommentAction(input: z.input<typeof commentInput>) {
   return run(async () => {
     const viewer = await requireViewer();
-    const { chapterId, body } = commentInput.parse(input);
+    const { chapterId, body, parentId } = commentInput.parse(input);
     const last = await db.comment.findFirst({ where: { userId: viewer.id }, orderBy: { createdAt: "desc" }, select: { createdAt: true } });
     if (last && Date.now() - last.createdAt.getTime() < COMMENT_COOLDOWN_MS) {
       return fail("You're commenting a little fast. Try again in a few seconds.", "rate-limited");
     }
     const chapter = await db.chapter.findUnique({ where: { id: chapterId }, select: { number: true, novel: { select: { slug: true } } } });
     if (!chapter) return fail("Chapter not found.");
-    const comment = await db.comment.create({ data: { userId: viewer.id, chapterId, body } });
+    if (parentId) {
+      const parent = await db.comment.findUnique({ where: { id: parentId }, select: { chapterId: true, deletedAt: true } });
+      if (!parent || parent.chapterId !== chapterId) return fail("That comment no longer exists.");
+      if (parent.deletedAt) return fail("You can't reply to a deleted comment.");
+    }
+    const comment = await db.comment.create({ data: { userId: viewer.id, chapterId, body, parentId } });
     revalidatePath(`/novels/${chapter.novel.slug}/${chapter.number}`);
     return ok({ id: comment.id });
   });
@@ -121,12 +127,37 @@ export async function deleteCommentAction(commentId: number) {
     const viewer = await requireViewer();
     const comment = await db.comment.findUnique({
       where: { id: id.parse(commentId) },
-      select: { userId: true, chapter: { select: { number: true, novel: { select: { slug: true } } } } },
+      select: { userId: true, _count: { select: { replies: true } }, chapter: { select: { number: true, novel: { select: { slug: true } } } } },
     });
     if (!comment) return fail("Comment not found.");
     if (comment.userId !== viewer.id && !viewer.isAdmin) return fail("You can only delete your own comments.", "forbidden");
-    await db.comment.delete({ where: { id: commentId } });
+    // Keep the thread intact if people replied; otherwise remove it outright.
+    if (comment._count.replies > 0) await db.comment.update({ where: { id: commentId }, data: { deletedAt: new Date(), body: "" } });
+    else await db.comment.delete({ where: { id: commentId } });
     revalidatePath(`/novels/${comment.chapter.novel.slug}/${comment.chapter.number}`);
     return ok(undefined);
+  });
+}
+
+/** Up (1), down (-1) or clear (0) a vote. Score and vote change together. */
+export async function voteCommentAction(commentId: number, value: number) {
+  return run(async () => {
+    const viewer = await requireViewer();
+    const v = z.union([z.literal(-1), z.literal(0), z.literal(1)]).parse(value);
+    const cid = id.parse(commentId);
+    const score = await db.$transaction(async (tx) => {
+      const existing = await tx.commentVote.findUnique({ where: { userId_commentId: { userId: viewer.id, commentId: cid } } });
+      const delta = v - (existing?.value ?? 0);
+      if (v === 0) await tx.commentVote.deleteMany({ where: { userId: viewer.id, commentId: cid } });
+      else
+        await tx.commentVote.upsert({
+          where: { userId_commentId: { userId: viewer.id, commentId: cid } },
+          update: { value: v },
+          create: { userId: viewer.id, commentId: cid, value: v },
+        });
+      const updated = await tx.comment.update({ where: { id: cid }, data: { score: { increment: delta } }, select: { score: true } });
+      return updated.score;
+    });
+    return ok({ score });
   });
 }

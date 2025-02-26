@@ -73,6 +73,7 @@ export async function getHomeData(viewer: Viewer | null) {
     }),
     viewer ? getContinueReading(viewer.id, 4) : Promise.resolve([]),
     db.comment.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: "desc" },
       take: 5,
       select: {
@@ -323,14 +324,34 @@ export async function getReaderChapter(slug: string, number: number, viewer: Vie
   };
 }
 
-export async function getComments(chapterId: number) {
-  return db.comment.findMany({
+/** All comments on a chapter, flat (the client builds the reply tree), with the viewer's own votes. */
+export async function getComments(chapterId: number, viewerId?: number) {
+  const comments = await db.comment.findMany({
     where: { chapterId },
     orderBy: { createdAt: "asc" },
-    take: 200,
-    select: { id: true, body: true, createdAt: true, user: { select: { id: true, username: true, imageUrl: true } } },
+    take: 500,
+    select: {
+      id: true,
+      parentId: true,
+      body: true,
+      score: true,
+      deletedAt: true,
+      createdAt: true,
+      user: { select: { id: true, username: true, role: true } },
+      ...(viewerId && { votes: { where: { userId: viewerId }, select: { value: true } } }),
+    },
   });
+  return comments.map(({ votes, deletedAt, body, user, ...c }) => ({
+    ...c,
+    deleted: Boolean(deletedAt),
+    // Deleted comments keep their place in the thread but not their content or author.
+    body: deletedAt ? "" : body,
+    user: deletedAt ? null : { id: user.id, username: user.username, isAdmin: user.role === "ADMIN" },
+    myVote: (votes as { value: number }[] | undefined)?.[0]?.value ?? 0,
+  }));
 }
+
+export type ChapterComment = Awaited<ReturnType<typeof getComments>>[number];
 
 // ─── Schedule ────────────────────────────────────────────────────────────────
 

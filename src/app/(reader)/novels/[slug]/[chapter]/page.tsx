@@ -45,7 +45,7 @@ export default async function ReaderPage({ params, searchParams }: PageProps<"/n
   const [settingsCookie, toc, comments, libraryEntry] = await Promise.all([
     cookies().then((c) => c.get(READER_COOKIE)?.value),
     getChapterList(chapter.novelId, viewer, { perPage: 1000 }),
-    getComments(chapter.id),
+    getComments(chapter.id, viewer?.id),
     viewer ? db.libraryEntry.findUnique({ where: { userId_novelId: { userId: viewer.id, novelId: chapter.novelId } } }) : null,
   ]);
   const nextItem = data.next ? toc.items.find((c) => c.number === data.next) : undefined;
