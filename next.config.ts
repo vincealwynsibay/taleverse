@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["@prisma/client", "pg"],
   devIndicators: false,
+  // Let phones on the local network load dev assets (http://<LAN IP>:3000).
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*"],
   // The nightly demo reset reads the seed catalogue from disk.
   outputFileTracingIncludes: {
     "/api/cron/demo-reset": ["./prisma/seed-data/**"],
