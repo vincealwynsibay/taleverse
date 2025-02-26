@@ -31,4 +31,5 @@ Grilled with Vince on 2026-11-14. Where he stopped the grill and said "just do t
 - **`DEV_AS=reader|admin`** signs in a local dev account when Clerk isn't configured (never in production). It was used to click through every signed-in flow overnight.
 - **Raw SQL for view counts and rating refreshes**, so they don't bump `Novel.updatedAt`, which drives "Recently updated".
 - **Integration tests use `prisma migrate deploy`**, not `migrate reset`: Prisma refuses destructive commands from AI agents. Each test truncates its own tables.
+- **Visual style: a blend (decided by Vince after seeing the rebuild).** The overnight redesign used warm paper with an orange accent. Vince chose to blend it with the original look: the original neutral shadcn greys and the teal of the old "taleverse.1" logo, keeping the new layouts and the Fraunces / Literata reading type. The paper and sepia reader themes remain as reading options.
 - **Per-viewer routes are `force-dynamic`** so a keyless build can't prerender a redirect for `/library`, `/credits` or `/admin`.

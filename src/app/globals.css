@@ -4,29 +4,30 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Taleverse palette: warm paper and ink, with an ember accent.
+ * Taleverse palette: the original project's neutral shadcn greys with its teal
+ * accent (the old "taleverse.1" logo colour), plus reading-first type.
  * Tokens follow shadcn/ui naming so the ui/ primitives pick them up.
  */
 :root {
-  --radius: 0.75rem;
-  --background: oklch(0.975 0.008 80);
-  --foreground: oklch(0.22 0.02 60);
-  --card: oklch(0.99 0.006 80);
-  --card-foreground: oklch(0.22 0.02 60);
-  --popover: oklch(0.99 0.006 80);
-  --popover-foreground: oklch(0.22 0.02 60);
-  --primary: oklch(0.56 0.17 38);
-  --primary-foreground: oklch(0.985 0.01 80);
-  --secondary: oklch(0.93 0.014 75);
-  --secondary-foreground: oklch(0.28 0.02 60);
-  --muted: oklch(0.94 0.012 75);
-  --muted-foreground: oklch(0.5 0.02 60);
-  --accent: oklch(0.92 0.03 60);
-  --accent-foreground: oklch(0.28 0.03 50);
-  --destructive: oklch(0.55 0.2 25);
-  --border: oklch(0.88 0.014 75);
-  --input: oklch(0.86 0.014 75);
-  --ring: oklch(0.56 0.17 38);
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.6 0.118 184.7); /* teal-600 */
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.3);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.6 0.118 184.7);
   --success: oklch(0.55 0.12 155);
   --warning: oklch(0.7 0.14 75);
   --reader-bg: var(--background);
@@ -34,24 +35,24 @@
 }
 
 .dark {
-  --background: oklch(0.16 0.012 265);
-  --foreground: oklch(0.93 0.012 80);
-  --card: oklch(0.2 0.014 265);
-  --card-foreground: oklch(0.93 0.012 80);
-  --popover: oklch(0.21 0.014 265);
-  --popover-foreground: oklch(0.93 0.012 80);
-  --primary: oklch(0.7 0.15 45);
-  --primary-foreground: oklch(0.16 0.012 265);
-  --secondary: oklch(0.25 0.014 265);
-  --secondary-foreground: oklch(0.93 0.012 80);
-  --muted: oklch(0.24 0.012 265);
-  --muted-foreground: oklch(0.68 0.015 80);
-  --accent: oklch(0.27 0.02 265);
-  --accent-foreground: oklch(0.93 0.012 80);
+  --background: oklch(0.17 0 0); /* the original 0 0% 6% */
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.704 0.14 182.5); /* teal-500 */
+  --primary-foreground: oklch(0.17 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.65 0.19 25);
-  --border: oklch(0.3 0.014 265);
-  --input: oklch(0.32 0.014 265);
-  --ring: oklch(0.7 0.15 45);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.3 0 0);
+  --ring: oklch(0.704 0.14 182.5);
   --success: oklch(0.7 0.13 155);
   --warning: oklch(0.8 0.13 80);
 }
@@ -66,8 +67,8 @@
   --reader-fg: oklch(0.3 0.04 55);
 }
 [data-reader-theme="night"] {
-  --reader-bg: oklch(0.16 0.012 265);
-  --reader-fg: oklch(0.86 0.012 80);
+  --reader-bg: oklch(0.17 0 0);
+  --reader-fg: oklch(0.88 0 0);
 }
 
 @theme inline {

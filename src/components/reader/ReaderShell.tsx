@@ -227,7 +227,7 @@ export function ReaderShell({ novel, chapter, prev, next, toc, initialSettings, 
                         ["auto", "Auto", "bg-gradient-to-br from-white to-zinc-800"],
                         ["paper", "Paper", "bg-[oklch(0.975_0.008_80)]"],
                         ["sepia", "Sepia", "bg-[oklch(0.93_0.035_80)]"],
-                        ["night", "Night", "bg-[oklch(0.16_0.012_265)]"],
+                        ["night", "Night", "bg-[oklch(0.17_0_0)]"],
                       ] as const
                     ).map(([value, label, swatch]) => (
                       <button
