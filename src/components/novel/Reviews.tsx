@@ -144,7 +144,7 @@ export function ReviewList({ reviews, viewerId }: { reviews: Review[]; viewerId:
                 {r.user.id === viewerId && <span className="ml-1 font-normal text-muted-foreground">(you)</span>}
               </span>
               <RatingStars value={r.rating} size={13} />
-              <time className="text-xs text-muted-foreground" dateTime={new Date(r.createdAt).toISOString()}>
+              <time suppressHydrationWarning className="text-xs text-muted-foreground" dateTime={new Date(r.createdAt).toISOString()}>
                 {formatDistanceToNowStrict(new Date(r.createdAt), { addSuffix: true })}
               </time>
             </div>

@@ -43,7 +43,9 @@ export function Paywall({ chapterId, price, freeAt, balance, returnTo }: Props) 
       <h2 className="font-display text-2xl font-semibold">This chapter is in early access</h2>
       <p className="mx-auto mt-2 max-w-sm text-sm opacity-75">
         Read it now for <strong className="text-primary">{price} credits</strong>, or wait: it&apos;s free for everyone in{" "}
-        <span className="font-medium">{freeIn}</span>.
+        <span suppressHydrationWarning className="font-medium">
+          {freeIn}
+        </span>.
       </p>
 
       {balance === null ? (

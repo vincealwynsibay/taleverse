@@ -21,6 +21,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // Keeps the editor toolbar above the on-screen keyboard on mobile (BlockNote).
+  interactiveWidget: "resizes-content",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#f7f3ec" },
     { media: "(prefers-color-scheme: dark)", color: "#14161c" },

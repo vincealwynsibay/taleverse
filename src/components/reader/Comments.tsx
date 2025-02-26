@@ -80,7 +80,7 @@ export function Comments({
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-2 text-sm">
                 <span className="font-semibold">{c.user.username}</span>
-                <time className="text-xs opacity-55" dateTime={new Date(c.createdAt).toISOString()}>
+                <time suppressHydrationWarning className="text-xs opacity-55" dateTime={new Date(c.createdAt).toISOString()}>
                   {formatDistanceToNowStrict(new Date(c.createdAt), { addSuffix: true })}
                 </time>
                 {viewer && (viewer.id === c.user.id || viewer.isAdmin) && (

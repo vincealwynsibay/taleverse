@@ -75,6 +75,7 @@ All variables are documented in [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
 | `pnpm lint` / `pnpm typecheck` | ESLint and TypeScript |
 | `pnpm demo:reset` | Restore the catalogue and demo accounts |
 | `pnpm import:gutenberg` | Re-download and re-split the seed novels |
+| `pnpm screenshots` | Re-capture `docs/screenshots` (23 views) from a running `DEV_AS=reader pnpm dev` |
 
 ## Deploying
 
