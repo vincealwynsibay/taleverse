@@ -18,6 +18,10 @@ type Shot = {
   persona?: "guest" | "reader" | "admin";
   theme?: "light" | "dark";
   reader?: "paper" | "sepia" | "night" | "auto";
+  /** Extra reader settings merged into the cookie (e.g. paged layout). */
+  readerExtra?: Record<string, unknown>;
+  /** Capture just this element instead of the viewport. */
+  element?: string;
   mobile?: boolean;
   fullPage?: boolean;
   /** Runs after load, before the capture. */
@@ -93,7 +97,7 @@ const shots: Shot[] = [
     persona: "guest",
     mobile: true,
     prepare: async (page) => {
-      await page.getByRole("button", { name: /^Chapter 4/ }).click();
+      await page.getByRole("button", { name: /^Ch\. 4/ }).click();
       await page.waitForTimeout(500);
     },
   },
@@ -112,6 +116,34 @@ const shots: Shot[] = [
       await page.waitForTimeout(1500);
     },
   },
+  { name: "mobile-reader-paged", path: "/novels/peter-pan/1", persona: "guest", reader: "paper", mobile: true, readerExtra: { layout: "paged", justify: true } },
+  {
+    name: "mobile-reader-paragraph",
+    path: "/novels/dracula/1",
+    reader: "night",
+    mobile: true,
+    prepare: async (page) => {
+      await page.locator('#chapter-body [data-p="1"] .pc-bubble').click();
+      await page.waitForTimeout(700);
+    },
+  },
+  {
+    name: "comments",
+    path: "/novels/dracula/1",
+    theme: "dark",
+    element: 'section[aria-labelledby="comments-heading"]',
+    prepare: async (page) => {
+      // The reader's fixed bars would be captured on top of the section.
+      await page.addStyleTag({ content: "header, footer { display: none !important; }" });
+    },
+  },
+  {
+    name: "reader-paged",
+    path: "/novels/the-wonderful-wizard-of-oz/1",
+    persona: "guest",
+    reader: "sepia",
+    readerExtra: { layout: "paged", justify: true },
+  },
 ];
 
 async function contextFor(browser: Awaited<ReturnType<typeof chromium.launch>>, shot: Shot): Promise<BrowserContext> {
@@ -125,7 +157,7 @@ async function contextFor(browser: Awaited<ReturnType<typeof chromium.launch>>, 
     { name: "tv_dev_as", value: shot.persona ?? "reader", domain: "localhost", path: "/" },
   ];
   if (shot.reader) {
-    const settings = { font: "sans", size: 2, leading: 1, width: 1, theme: shot.reader };
+    const settings = { font: "sans", size: 2, leading: 1, width: 1, theme: shot.reader, ...shot.readerExtra };
     cookies.push({ name: "tv_reader", value: encodeURIComponent(JSON.stringify(settings)), domain: "localhost", path: "/" });
   }
   await ctx.addCookies(cookies);
@@ -142,7 +174,8 @@ async function main() {
     await page.goto(BASE + shot.path, { waitUntil: "networkidle" });
     await page.evaluate(() => document.fonts.ready);
     if (shot.prepare) await shot.prepare(page);
-    await page.screenshot({ path: `${OUT}${shot.name}.jpeg`, type: "jpeg", quality: 82, fullPage: shot.fullPage });
+    if (shot.element) await page.locator(shot.element).screenshot({ path: `${OUT}${shot.name}.jpeg`, type: "jpeg", quality: 82 });
+    else await page.screenshot({ path: `${OUT}${shot.name}.jpeg`, type: "jpeg", quality: 82, fullPage: shot.fullPage });
     console.log(`  ${shot.name}`);
     await ctx.close();
   }

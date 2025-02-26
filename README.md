@@ -1,30 +1,39 @@
+<p align="center"><img src="brand/readme-hero.png" alt="Taleverse: serial fiction, one chapter at a time" width="100%"></p>
+
 # Taleverse
 
 **Serial fiction, one chapter at a time.** A web-novel platform: the back catalogue is free, the newest chapters are early access for credits, and every chapter goes free for everyone a week after release.
-
-![Home page](docs/screenshots/home.jpeg)
 
 > Try it without an account: **Try as a reader** signs you into a shared demo account with 25 credits; **Try as an admin** lets you write and schedule chapters. Payments run in Stripe test mode (`4242 4242 4242 4242`). Demo data resets nightly.
 
 ## The two-minute tour
 
-1. **Read.** Open any novel and start chapter 1. The reader is server-rendered, with a choice of typeface, size, spacing, width and paper / sepia / night themes. Settings live in a cookie, so they render on the server with no flash.
-2. **Hit the paywall.** The newest chapters of ongoing novels are in early access. You see a short preview, the price, and when the chapter goes free.
-3. **Unlock.** As the demo reader, spend 5 credits. Your balance updates and the chapter opens.
-4. **Top up.** Buy a credit pack through Stripe Checkout; the webhook credits your account exactly once.
-5. **Publish.** Switch to the demo admin, open a chapter, edit it in the block editor, and schedule its release and early-access window. It appears on the public release schedule.
+1. **Browse.** A content-first home page: a spotlight of featured novels, trending and completed shelves, latest updates, a top-rated ranking and the newest comments. 17 public-domain classics with their real first-edition cover art.
+2. **Read.** The reader works like a reading app. The top and bottom bars dock out of the way and come back with a tap. Read as a scroll or as pages with a 3D page flip and swipe, let it auto-scroll, or have it read aloud with the current line highlighted. Tune the typeface (including Atkinson Hyperlegible), size, spacing, width and theme; turn on focus mode or a warm night light. Select any word to look it up.
+3. **Talk.** Comment on a single paragraph from the margin, or join the chapter discussion: Reddit-style threads with replies, votes and collapsible branches.
+4. **Hit the paywall.** The newest chapters of ongoing novels are in early access. You see a preview, the price, and when the chapter goes free. As the demo reader, spend 5 credits to unlock it.
+5. **Top up.** Buy a credit pack through Stripe Checkout; the webhook credits your account exactly once.
+6. **Publish.** Switch to the demo admin, edit a chapter in the block editor, and schedule its release and early-access window. It appears on the public release schedule.
 
-Along the way: a library with reading progress and "Continue reading", ratings and reviews, chapter comments, genre pages, search, and dark mode.
+Along the way: a library with reading progress and "Continue reading", ratings and reviews, genre pages, Ctrl K search, and light/dark themes.
 
-| Novel page | Early-access paywall |
+| Page-flip reader | Paragraph comments | Reader settings |
+|---|---|---|
+| ![Paged reader](docs/screenshots/mobile-reader-paged.jpeg) | ![Paragraph comments](docs/screenshots/mobile-reader-paragraph.jpeg) | ![Reader settings](docs/screenshots/mobile-reader-settings.jpeg) |
+
+| Home | Novel page |
 |---|---|
-| ![Novel page](docs/screenshots/novel.jpeg) | ![Paywall](docs/screenshots/paywall.jpeg) |
-| **Reader (night theme)** | **Admin chapter editor** |
-| ![Reader](docs/screenshots/reader.jpeg) | ![Admin editor](docs/screenshots/admin-editor.jpeg) |
+| ![Home](docs/screenshots/home.jpeg) | ![Novel page](docs/screenshots/novel-dark.jpeg) |
+| **Threaded comments** | **Early-access paywall** |
+| ![Comments](docs/screenshots/comments.jpeg) | ![Paywall](docs/screenshots/paywall.jpeg) |
+| **Desktop reader, sepia, pages** | **Admin chapter editor** |
+| ![Reader](docs/screenshots/reader-paged.jpeg) | ![Admin editor](docs/screenshots/admin-editor.jpeg) |
+
+All 30 screenshots are in [`docs/screenshots`](docs/screenshots); logos, social images and posters are in the [brand kit](brand/README.md).
 
 ## Stack
 
-Next.js 16 (App Router, Server Components, Server Actions) · React 19 · TypeScript · Prisma 7 on PostgreSQL · Clerk · Stripe Checkout · Tailwind CSS 4 + shadcn/ui · BlockNote · Vitest · GitHub Actions
+Next.js 16 (App Router, Server Components, Server Actions) · React 19 · TypeScript · Prisma 7 on PostgreSQL · Clerk · Stripe Checkout · Tailwind CSS 4 + shadcn/ui · BlockNote · Vitest · Playwright · GitHub Actions
 
 ## Engineering notes
 
@@ -42,7 +51,9 @@ The parts most worth reading in the code:
 
 **One-click demo accounts** ([`src/app/actions/demo.ts`](src/app/actions/demo.ts)). The server finds or creates the shared Clerk user, then issues a short-lived sign-in token, which the client exchanges for a session (`signIn.ticket()`). A [nightly reset](src/lib/seed/index.ts) (Vercel Cron → `/api/cron/demo-reset`) restores the catalogue, regenerates release dates relative to now so early-access chapters are always live, and wipes demo activity, while keeping real users' purchases.
 
-**Real content.** Seven public-domain novels from Project Gutenberg, split into 191 chapters by a [tested importer](src/lib/seed/gutenberg.ts) that strips boilerplate, skips tables of contents, keeps verse line breaks and turns `_underscores_` into italics. Covers are generated typographically from a per-novel hue.
+**Real content.** Seventeen public-domain novels from Project Gutenberg, split into 492 chapters by a [tested importer](src/lib/seed/gutenberg.ts) that strips boilerplate, skips tables of contents, keeps verse line breaks and turns `_underscores_` into italics. Covers and banners are public-domain first-edition art, credited on each novel page.
+
+**A reader that stays on the client only where it must** ([`src/components/reader/`](src/components/reader)). The chapter is server-rendered HTML; the shell around it adds the bars, page mode (CSS columns plus a Web Animations page flip), auto-scroll, read-aloud (`speechSynthesis`) and the paragraph-comment margin. Reader settings live in a cookie, so the first paint already has your font, theme and layout.
 
 **Works with zero config.** Without Clerk keys the app runs read-only (browse and read free chapters). Without Stripe keys, purchases go through a simulated provider that uses the same ledger path (development only). CI builds in exactly that mode.
 
@@ -56,7 +67,7 @@ Requires Node 22+, pnpm and Docker.
 pnpm install
 pnpm db:up          # Postgres 17 in Docker (plus a separate test database)
 pnpm db:deploy      # apply migrations
-pnpm db:seed        # 7 novels, 191 chapters, readers, reviews
+pnpm db:seed        # 17 novels, 492 chapters, readers, reviews, comments
 pnpm dev            # http://localhost:3000
 ```
 
@@ -75,7 +86,8 @@ All variables are documented in [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
 | `pnpm lint` / `pnpm typecheck` | ESLint and TypeScript |
 | `pnpm demo:reset` | Restore the catalogue and demo accounts |
 | `pnpm import:gutenberg` | Re-download and re-split the seed novels |
-| `pnpm screenshots` | Re-capture `docs/screenshots` (23 views) from a running `DEV_AS=reader pnpm dev` |
+| `pnpm screenshots` | Re-capture `docs/screenshots` (30 views) from a running `DEV_AS=reader pnpm dev` |
+| `pnpm brand:logo` / `pnpm brand:render` | Regenerate the logo set and the brand kit (social images, posters, framed screenshots, app icons) |
 
 ## Deploying
 
@@ -83,4 +95,4 @@ Built for Vercel + Neon: set `DATABASE_URL`, the Clerk and Stripe keys, `APP_URL
 
 ## Credits
 
-Novel texts are in the public domain and come from [Project Gutenberg](https://www.gutenberg.org). Taleverse is not affiliated with Project Gutenberg.
+Novel texts are in the public domain and come from [Project Gutenberg](https://www.gutenberg.org). Cover and banner art is public domain; sources are listed in [`prisma/seed-data/art.json`](prisma/seed-data/art.json). Taleverse is not affiliated with Project Gutenberg.
