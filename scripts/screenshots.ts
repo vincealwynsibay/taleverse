@@ -335,6 +335,24 @@ async function writeGallery() {
     }
   }
   await writeFile(`${OUT}README.md`, lines.join("\n"));
+
+  // The same gallery as a page that opens straight from disk.
+  const fig = (n: string, caption: string) =>
+    `<figure class="${mobile.has(n) ? "phone" : ""}"><a href="${n}.jpeg"><img src="${n}.jpeg" alt="${caption}" loading="lazy"></a><figcaption>${caption}</figcaption></figure>`;
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Taleverse screenshots</title>
+<style>body{background:#0d0f15;color:#e5e8ed;font-family:system-ui,sans-serif;margin:0;padding:32px;max-width:1500px}p{color:#8d939c}h2{margin:44px 0 4px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px;align-items:start}.grid.phones{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}figure{margin:0}img{width:100%;border:1px solid #252930;border-radius:8px;display:block}figcaption{color:#8d939c;font-size:13px;margin-top:6px}</style></head><body>
+<h1>Taleverse screenshots</h1><p>${shots.length} views, captured by <code>pnpm screenshots</code>. Click any image for full size.</p>
+${gallery
+  .map((g) => {
+    const names = Object.keys(g.shots);
+    const d = names.filter((n) => !mobile.has(n));
+    const ph = names.filter((n) => mobile.has(n));
+    return `<h2>${g.title}</h2><p>${g.intro}</p>${d.length ? `<div class="grid">${d.map((n) => fig(n, g.shots[n])).join("")}</div>` : ""}${ph.length ? `<div class="grid phones" style="margin-top:20px">${ph.map((n) => fig(n, g.shots[n])).join("")}</div>` : ""}`;
+  })
+  .join("\n")}
+</body></html>
+`;
+  await writeFile(`${OUT}index.html`, html);
 }
 
 async function contextFor(browser: Awaited<ReturnType<typeof chromium.launch>>, shot: Shot): Promise<BrowserContext> {
