@@ -114,8 +114,8 @@ export async function seedCatalog(db: Db, { now = new Date(), log = console.log 
   }
 }
 
-/** Seed readers, reviews and comments. Replaces previous seeded activity. */
-export async function seedCommunity(db: Db) {
+/** Seed readers, reviews, comments and store activity. Replaces previous seeded activity. */
+export async function seedCommunity(db: Db, { now = new Date() } = {}) {
   const users = new Map<string, number>();
   for (const r of seedReaders) {
     const u = await db.user.upsert({
@@ -130,9 +130,11 @@ export async function seedCommunity(db: Db) {
   await db.comment.deleteMany({ where: { userId: { in: ids } } });
 
   const novels = await db.novel.findMany({ where: { isSeed: true }, select: { id: true, slug: true } });
-  for (const novel of novels) {
-    for (const r of seedReviews[novel.slug] ?? []) {
-      await db.review.create({ data: { userId: users.get(r.by)!, novelId: novel.id, rating: r.rating, body: r.body } });
+  for (const [n, novel] of novels.entries()) {
+    for (const [k, r] of (seedReviews[novel.slug] ?? []).entries()) {
+      // Spread reviews over the past few weeks, newest first in each list.
+      const createdAt = new Date(now.getTime() - ((k + 1) * 31 + n * 5) * 3_600_000);
+      await db.review.create({ data: { userId: users.get(r.by)!, novelId: novel.id, rating: r.rating, body: r.body, createdAt } });
     }
     for (const c of seedComments[novel.slug] ?? []) {
       const chapter = await db.chapter.findUnique({ where: { novelId_number: { novelId: novel.id, number: c.chapter } } });
@@ -161,6 +163,53 @@ export async function seedCommunity(db: Db) {
     }
     await refreshRating(db, novel.id);
   }
+  await seedSales(db, ids, now);
+}
+
+/**
+ * A few days of store activity from the seeded readers, so the admin overview
+ * shows real numbers: each buys one credit pack and unlocks early-access
+ * chapters with it, through the same ledger rows the app writes.
+ */
+async function seedSales(db: Db, readerIds: number[], now: Date) {
+  // Unlock rows cascade from their ledger entries.
+  await db.creditLedgerEntry.deleteMany({ where: { userId: { in: readerIds } } });
+  const early = await db.chapter.findMany({
+    where: { publishedAt: { lte: now }, freeAt: { gt: now } },
+    orderBy: [{ publishedAt: "desc" }, { id: "asc" }],
+    select: { id: true, number: true, unlockPrice: true, publishedAt: true, novel: { select: { title: true } } },
+  });
+  const hour = 3_600_000;
+  for (const [i, userId] of readerIds.entries()) {
+    const pack = creditPacks[i % creditPacks.length];
+    // Readers' activity interleaves over the last three days.
+    const boughtAt = new Date(now.getTime() - (66 - i * 4) * hour);
+    await db.creditLedgerEntry.create({
+      data: { userId, delta: pack.credits, kind: "PURCHASE", idempotencyKey: `seed:purchase:${userId}`, description: `${pack.name} pack (${pack.credits} credits)`, createdAt: boughtAt },
+    });
+    let balance = pack.credits;
+    // Each reader follows a different slice of the early-access list.
+    const picks = early.filter((_, j) => (j + i) % 3 !== 0).slice(0, 4 + (i % 3));
+    for (const [k, ch] of picks.entries()) {
+      if (balance < ch.unlockPrice) break;
+      const after = Math.max(boughtAt.getTime(), ch.publishedAt!.getTime());
+      // Somewhere between "could unlock" and now, varied per reader and chapter.
+      const frac = 0.05 + ((k * 0.37 + i * 0.19) % 0.9);
+      const at = new Date(after + (now.getTime() - after) * frac);
+      const entry = await db.creditLedgerEntry.create({
+        data: {
+          userId,
+          delta: -ch.unlockPrice,
+          kind: "SPEND",
+          idempotencyKey: `unlock:${userId}:${ch.id}`,
+          description: `Unlocked ${ch.novel.title} · Chapter ${ch.number}`,
+          createdAt: at,
+        },
+      });
+      await db.chapterUnlock.create({ data: { userId, chapterId: ch.id, ledgerEntryId: entry.id, createdAt: at } });
+      balance -= ch.unlockPrice;
+    }
+  }
 }
 
 /**
@@ -171,7 +220,7 @@ export async function seedCommunity(db: Db) {
 export async function resetDemo(db: Db, { now = new Date(), log = console.log } = {}) {
   await db.novel.deleteMany({ where: { isSeed: false } });
   await seedCatalog(db, { now, log });
-  await seedCommunity(db);
+  await seedCommunity(db, { now });
 
   const demoUsers = await db.user.findMany({ where: { isDemo: true } });
   for (const user of demoUsers) {

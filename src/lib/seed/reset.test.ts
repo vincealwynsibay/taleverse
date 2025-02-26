@@ -49,3 +49,18 @@ describe("resetDemo", () => {
     expect(await getBalance(db, real.id)).toBe(DEMO_STARTING_CREDITS - chapter.unlockPrice);
   }, 60_000);
 });
+
+describe("seeded store activity", () => {
+  it("gives seeded readers purchases and early-access unlocks without overspending", async () => {
+    const readers = await db.user.findMany({ where: { clerkId: { startsWith: "seed:" } }, select: { id: true } });
+    expect(readers.length).toBeGreaterThan(0);
+    expect(await db.creditLedgerEntry.count({ where: { kind: "PURCHASE", userId: { in: readers.map((r) => r.id) } } })).toBe(readers.length);
+    expect(await db.chapterUnlock.count({ where: { userId: { in: readers.map((r) => r.id) } } })).toBeGreaterThan(0);
+    for (const r of readers) expect(await getBalance(db, r.id)).toBeGreaterThanOrEqual(0);
+
+    // Re-running the reset replaces the activity rather than duplicating it.
+    const before = await db.creditLedgerEntry.count();
+    await resetDemo(db, quiet);
+    expect(await db.creditLedgerEntry.count()).toBe(before);
+  }, 60_000);
+});
