@@ -91,7 +91,7 @@ All variables are documented in [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
 
 ## Deploying
 
-Built for Vercel + Neon: set `DATABASE_URL`, the Clerk and Stripe keys, `APP_URL` and `CRON_SECRET`; `vercel.json` schedules the nightly demo reset. Run `pnpm db:deploy && pnpm db:seed` once against the production database.
+Built for Vercel + Neon: set `DATABASE_URL`, the Clerk and Stripe keys, `APP_URL` and `CRON_SECRET`; `vercel.json` schedules the nightly demo reset. Run `pnpm db:deploy && pnpm db:seed` once against the production database. The step-by-step checklist, with webhooks, checks and troubleshooting, is in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Credits
 
